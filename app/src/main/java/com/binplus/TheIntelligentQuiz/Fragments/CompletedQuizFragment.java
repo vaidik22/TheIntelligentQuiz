@@ -1,5 +1,7 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_CONTEST;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,26 +18,25 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Adapters.QuizAdapterPast;
 import com.binplus.TheIntelligentQuiz.Model.PastModel;
 import com.binplus.TheIntelligentQuiz.R;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
 import com.denzcoskun.imageslider.ImageSlider;
-import com.denzcoskun.imageslider.constants.ScaleTypes;
-import com.denzcoskun.imageslider.models.SlideModel;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class CompletedQuizFragment extends Fragment {
 
-    private Api apiInterface;
     private ImageSlider image_slider;
     private RecyclerView recyclerView;
     private QuizAdapterPast quizAdapter;
@@ -50,7 +51,6 @@ public class CompletedQuizFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
     }
 
     @Override
@@ -67,60 +67,122 @@ public class CompletedQuizFragment extends Fragment {
         return view;
     }
 
-    private void callUpcomingQuizApi(String type) {
-        progressBar.setVisibility(View.VISIBLE);
-        JsonObject params = new JsonObject();
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String authId = sharedPreferences.getString("userId", "Default Id");
+//    private void callUpcomingQuizApi(String type) {
+//        progressBar.setVisibility(View.VISIBLE);
+//        JsonObject params = new JsonObject();
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//
+//        if (type.equalsIgnoreCase("live")) {
+//            params.addProperty("key", "1");
+//        }  if (type.equalsIgnoreCase("upcoming")) {
+//            params.addProperty("key", "0");
+//        }  if (type.equalsIgnoreCase("past")) {
+//            params.addProperty("key", "2");
+//        }
+//        params.addProperty("user_id", authId);
+//        params.addProperty("authId", authId);
+//
+//        Call<PastModel> call = apiInterface.getContestApiPast(params);
+//        call.enqueue(new Callback<PastModel>() {
+//            @Override
+//            public void onResponse(Call<PastModel> call, Response<PastModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    PastModel pastModel = response.body();
+//                    List<PastModel.Datum> data = pastModel.past_contest.data;
+//                    if(pastModel.getPast_contest().error){
+//                        no_upcoming_contest_layout.setVisibility(View.VISIBLE);
+//                        tv_message.setText(pastModel.getPast_contest().getMessage());
+//                    }
+//                    else if (data != null) {
+//                        no_upcoming_contest_layout.setVisibility(View.GONE);
+//                        recyclerView.setVisibility(View.VISIBLE);
+//                        pastModelItemList.clear();
+//                        pastModelItemList.addAll(data);
+//                        quizAdapter.notifyDataSetChanged();
+//                        progressBar.setVisibility(View.GONE);
+//                        for (PastModel.Datum datum : data) {
+//                            Log.d("HomePagewefwef", "Datum: " + data);
+//                        }
+//                    } else {
+//                        Log.e("HomePage", "No data available");
+//                        progressBar.setVisibility(View.GONE);
+//                    }
+//                } else {
+//                    Log.e("HomePage", "Response not successful or body is null");
+//                    progressBar.setVisibility(View.GONE);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<PastModel> call, Throwable t) {
+//                Log.e("HomePage", "API call failed: " + t.getMessage());
+//                progressBar.setVisibility(View.GONE);
+//            }
+//        });
+//    }
+private void callUpcomingQuizApi(String type) {
+    progressBar.setVisibility(View.VISIBLE);
+    SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+    String authId = sharedPreferences.getString("userId", "Default Id");
 
+    String url = GET_CONTEST;
+
+    // Setting up parameters for the request
+    JSONObject params = new JSONObject();
+    try {
         if (type.equalsIgnoreCase("live")) {
-            params.addProperty("key", "1");
-        }  if (type.equalsIgnoreCase("upcoming")) {
-            params.addProperty("key", "0");
-        }  if (type.equalsIgnoreCase("past")) {
-            params.addProperty("key", "2");
+            params.put("key", "1");
+        } else if (type.equalsIgnoreCase("upcoming")) {
+            params.put("key", "0");
+        } else if (type.equalsIgnoreCase("past")) {
+            params.put("key", "2");
         }
-        params.addProperty("user_id", authId);
-        params.addProperty("authId", authId);
+        params.put("user_id", authId);
+        params.put("authId", authId);
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
 
-        Call<PastModel> call = apiInterface.getContestApiPast(params);
-        call.enqueue(new Callback<PastModel>() {
-            @Override
-            public void onResponse(Call<PastModel> call, Response<PastModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    PastModel pastModel = response.body();
-                    List<PastModel.Datum> data = pastModel.past_contest.data;
-                    if(pastModel.getPast_contest().error){
+    // Create a JsonObjectRequest
+    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+            response -> {
+                progressBar.setVisibility(View.GONE);
+                try {
+                    Gson gson = new Gson();
+                    PastModel pastModel = gson.fromJson(response.toString(), PastModel.class);
+
+                    if (pastModel.getPast_contest().error) {
                         no_upcoming_contest_layout.setVisibility(View.VISIBLE);
                         tv_message.setText(pastModel.getPast_contest().getMessage());
-                    }
-                    else if (data != null) {
-                        no_upcoming_contest_layout.setVisibility(View.GONE);
-                        recyclerView.setVisibility(View.VISIBLE);
-                        pastModelItemList.clear();
-                        pastModelItemList.addAll(data);
-                        quizAdapter.notifyDataSetChanged();
-                        progressBar.setVisibility(View.GONE);
-                        for (PastModel.Datum datum : data) {
-                            Log.d("HomePagewefwef", "Datum: " + data);
-                        }
                     } else {
-                        Log.e("HomePage", "No data available");
-                        progressBar.setVisibility(View.GONE);
+                        List<PastModel.Datum> data = pastModel.past_contest.data;
+                        if (data != null) {
+                            no_upcoming_contest_layout.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.VISIBLE);
+                            pastModelItemList.clear();
+                            pastModelItemList.addAll(data);
+                            quizAdapter.notifyDataSetChanged();
+                            for (PastModel.Datum datum : data) {
+                                Log.d("HomePage", "Datum: " + datum.toString());
+                            }
+                        } else {
+                            Log.e("HomePage", "No data available");
+                        }
                     }
-                } else {
-                    Log.e("HomePage", "Response not successful or body is null");
-                    progressBar.setVisibility(View.GONE);
+                } catch (Exception e) {
+                    Log.e("HomePage", "Error parsing JSON response", e);
                 }
-            }
-
-            @Override
-            public void onFailure(Call<PastModel> call, Throwable t) {
-                Log.e("HomePage", "API call failed: " + t.getMessage());
+            },
+            error -> {
+                Log.e("HomePage", "API call failed: " + error.toString());
                 progressBar.setVisibility(View.GONE);
             }
-        });
-    }
+    );
+
+    // Adding the request to the queue
+    Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
+}
 
     private void initViews(View view) {
         image_slider = view.findViewById(R.id.image_slider);

@@ -3,6 +3,9 @@ package com.binplus.TheIntelligentQuiz.Fragments;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.LOGIN;
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.VERIFY_OTP;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,15 +27,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Activity.HomeActivity;
-import com.binplus.TheIntelligentQuiz.Model.LoginModel;
 import com.binplus.TheIntelligentQuiz.Model.SignUpModel;
-import com.binplus.TheIntelligentQuiz.Model.VerifyOtpModel;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.bottomsheetOtp.OtpVerificationBottomSheetDialog;
 import com.binplus.TheIntelligentQuiz.common.Common;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -44,13 +47,13 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.gson.JsonObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class LoginFragment extends Fragment implements OtpVerificationBottomSheetDialog.OtpVerificationListener {
     TextView btnGetOtp;
@@ -60,12 +63,12 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
     Button btnLogin;
     Button btnCreateAccount;
     Common common;
-    Api apiInterface ;
     ImageView btnGoogle, btnFacebook;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private GoogleApiClient googleApiClient;
     private static final int RC_SIGN_IN = 1;
+
 
     private ArrayList<SignUpModel> mModel;
     private static final long delay = 2000;
@@ -86,7 +89,6 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
     }
 
     @Override
@@ -167,39 +169,73 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
 
 
 
+//    private void checkEmailRegistered(String mobileOrEmail) {
+//        JsonObject object = new JsonObject();
+//        object.addProperty("mobile", mobileOrEmail);
+//
+//        Call<LoginModel> call = apiInterface.getLoginApi(object);
+//        call.enqueue(new Callback<LoginModel>() {
+//            @Override
+//            public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
+//                if (response.isSuccessful()) {
+//                    LoginModel resp = response.body();
+//                    if (resp != null && resp.isResponse()) {
+//                        callVerifyOtpApi();
+//                        navigateToHome();
+//                    } else {
+//                        showError(R.string.records_not_found);
+//                    }
+//                } else {
+//                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+//                    try {
+//                        String errorBody = response.errorBody().string();
+//                        Log.e("API Error", errorBody);
+//                    } catch (Exception e) {
+//                        Log.e("API Error", "Error parsing error body", e);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<LoginModel> call, Throwable t) {
+//                Log.e("onFailure", "Yes", t);
+//            }
+//        });
+//    }
+
     private void checkEmailRegistered(String mobileOrEmail) {
-        JsonObject object = new JsonObject();
-        object.addProperty("mobile", mobileOrEmail);
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("mobile", mobileOrEmail);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        Call<LoginModel> call = apiInterface.getLoginApi(object);
-        call.enqueue(new Callback<LoginModel>() {
-            @Override
-            public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
-                if (response.isSuccessful()) {
-                    LoginModel resp = response.body();
-                    if (resp != null && resp.isResponse()) {
-                        callVerifyOtpApi();
-                        navigateToHome();
-                    } else {
-                        showError(R.string.records_not_found);
-                    }
-                } else {
-                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+        String url = LOGIN;
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                response -> {
                     try {
-                        String errorBody = response.errorBody().string();
-                        Log.e("API Error", errorBody);
-                    } catch (Exception e) {
-                        Log.e("API Error", "Error parsing error body", e);
+                        boolean isResponse = response.getBoolean("response");
+                        if (isResponse) {
+                            callVerifyOtpApiVolley();
+                            navigateToHome();
+                        } else {
+                            showError(R.string.records_not_found);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                },
+                error -> {
+                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+                    Log.e("API Error", error.toString());
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(Call<LoginModel> call, Throwable t) {
-                Log.e("onFailure", "Yes", t);
-            }
-        });
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
 
 
 
@@ -224,7 +260,7 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
                 if (!isValidMobileNumber(mobileNumber)) {
                     showError(R.string.please_fill_valid_mobile_number);
                 } else {
-                    callLoginApi();
+                    callLoginApiVolley();
                 }
             }
         });
@@ -235,7 +271,7 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
                 if (otpDialog == null || !otpDialog.isOtpVerified()) {
                     showError(R.string.please_verify_otp);
                 } else {
-                    callVerifyOtpApi();
+                    callVerifyOtpApiVolley();
                     SharedPreferences preferences = getActivity().getSharedPreferences("UserSession", MODE_PRIVATE);
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putBoolean("IsLoggedIn", true);
@@ -266,67 +302,173 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
             }
     });
     }
-    private void callLoginApi() {
+//    private void callLoginApi() {
+//        String mobileNumber = etMobileNumber.getText().toString().trim();
+//        JsonObject object = new JsonObject();
+//        object.addProperty("mobile", mobileNumber);
+//
+//        Call<LoginModel> call = apiInterface.getLoginApi(object);
+//        call.enqueue(new Callback<LoginModel>() {
+//            @Override
+//            public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
+//                if (response.isSuccessful()) {
+//                    LoginModel resp = response.body();
+//                    if (resp != null && resp.isResponse()) {
+//                       showErrorGreen(R.string.otp_sent_successfully);
+//                        showOtpDialog();
+//                        otpDialog.setOtp(resp.getOtp(), true);
+//                    } else {
+//                        showError(R.string.records_not_found);
+//                    }
+//                } else {
+//                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+//                    try {
+//                        String errorBody = response.errorBody().string();
+//                        Log.e("API Error", errorBody);
+//                    } catch (Exception e) {
+//                        Log.e("API Error", "Error parsing error body", e);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<LoginModel> call, Throwable t) {
+//                Log.e("onFailure", "Yes", t);
+//            }
+//        });
+//    }
+    private void callLoginApiVolley() {
         String mobileNumber = etMobileNumber.getText().toString().trim();
-        JsonObject object = new JsonObject();
-        object.addProperty("mobile", mobileNumber);
+        String url = LOGIN;
 
-        Call<LoginModel> call = apiInterface.getLoginApi(object);
-        call.enqueue(new Callback<LoginModel>() {
-            @Override
-            public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
-                if (response.isSuccessful()) {
-                    LoginModel resp = response.body();
-                    if (resp != null && resp.isResponse()) {
-                       showErrorGreen(R.string.otp_sent_successfully);
-                        showOtpDialog();
-                        otpDialog.setOtp(resp.getOtp(), true);
-                    } else {
-                        showError(R.string.records_not_found);
-                    }
-                } else {
-                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+        JSONObject object = new JSONObject();
+        try {
+            object.put("mobile", mobileNumber);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                object,
+                response -> {
                     try {
-                        String errorBody = response.errorBody().string();
-                        Log.e("API Error", errorBody);
-                    } catch (Exception e) {
-                        Log.e("API Error", "Error parsing error body", e);
+                        if (response != null && response.getBoolean("response")) {
+                            showErrorGreen(R.string.otp_sent_successfully);
+                            showOtpDialog();
+                            String otp = response.getString("otp");
+                            otpDialog.setOtp(Integer.parseInt(otp), true);
+                        } else {
+                            showError(R.string.records_not_found);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error parsing response", Toast.LENGTH_SHORT).show();
                     }
+                },
+                error -> {
+                    Toast.makeText(getContext(), "Request failed", Toast.LENGTH_SHORT).show();
+                    Log.e("API Error", "Error: " + error.getMessage());
                 }
-            }
+        );
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-            @Override
-            public void onFailure(Call<LoginModel> call, Throwable t) {
-                Log.e("onFailure", "Yes", t);
-            }
-        });
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
 
 
-    private void callVerifyOtpApi() {
+//    private void callVerifyOtpApi() {
+//        String mobileNumber = etMobileNumber.getText().toString().trim();
+//        String otp = otpDialog != null ? otpDialog.getGeneratedOtp() : "";
+//        JsonObject object = new JsonObject();
+//        object.addProperty("is_login", 1);
+//        object.addProperty("mobile_email", mobileNumber);
+//        object.addProperty("otp", otp);
+//        object.addProperty("key", 1);
+//        object.addProperty("imei", Constants.IMEI_ID);
+//        object.addProperty("token", Constants.USER_ID);
+//        Log.e("OTP", otp);
+//
+//        Call<VerifyOtpModel> call = apiInterface.getVerifyOtpApi(object);
+//        call.enqueue(new Callback<VerifyOtpModel>() {
+//            @Override
+//            public void onResponse(Call<VerifyOtpModel> call, Response<VerifyOtpModel> response) {
+//                if (response.isSuccessful()) {
+//                    VerifyOtpModel resp = response.body();
+//                    if (resp != null) {
+//                        Log.e("VerifyOtpModel", resp.toString());
+//                        if (resp.isResponse()) {
+//                            String userName = resp.getData().getName();
+//                            String userMobile = resp.getData().getMobile();
+//                            String userId = resp.getData().getId();
+//
+//                            SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//                            SharedPreferences.Editor editor = sharedPreferences.edit();
+//                            editor.putString("userName", userName);
+//                            editor.putString("userMobile", userMobile);
+//                            editor.putString("userId", userId);
+//                            editor.apply();
+//                            Log.e( "UserId ssfqwf", userId);
+//                            showErrorGreen(R.string.Sign_Up_Successful);
+//                            navigateToHome();
+//                        } else {
+//                            Toast.makeText(getContext(), "Error in Sign Up", Toast.LENGTH_SHORT).show();
+//                        }
+//                    } else {
+//                        Toast.makeText(getContext(), "Response body is null", Toast.LENGTH_SHORT).show();
+//                        Log.e("API Response", "Response body is null");
+//                    }
+//                } else {
+//                    Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
+//                    try {
+//                        String errorBody = response.errorBody().string();
+//                        Log.e("API Error", errorBody);
+//                    } catch (Exception e) {
+//                        Log.e("API Error", "Error parsing error body", e);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<VerifyOtpModel> call, Throwable t) {
+//                Log.e("onFailure", "Yes", t);
+//            }
+//        });
+//    }
+
+    private void callVerifyOtpApiVolley() {
         String mobileNumber = etMobileNumber.getText().toString().trim();
         String otp = otpDialog != null ? otpDialog.getGeneratedOtp() : "";
-        JsonObject object = new JsonObject();
-        object.addProperty("is_login", 1);
-        object.addProperty("mobile_email", mobileNumber);
-        object.addProperty("otp", otp);
-        object.addProperty("key", 1);
-        object.addProperty("imei", Constants.IMEI_ID);
-        object.addProperty("token", Constants.USER_ID);
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("is_login", 1);
+            jsonObject.put("mobile_email", mobileNumber);
+            jsonObject.put("otp", otp);
+            jsonObject.put("key", 1);
+            jsonObject.put("imei", Constants.IMEI_ID);
+            jsonObject.put("token", Constants.USER_ID);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         Log.e("OTP", otp);
 
-        Call<VerifyOtpModel> call = apiInterface.getVerifyOtpApi(object);
-        call.enqueue(new Callback<VerifyOtpModel>() {
-            @Override
-            public void onResponse(Call<VerifyOtpModel> call, Response<VerifyOtpModel> response) {
-                if (response.isSuccessful()) {
-                    VerifyOtpModel resp = response.body();
-                    if (resp != null) {
-                        Log.e("VerifyOtpModel", resp.toString());
-                        if (resp.isResponse()) {
-                            String userName = resp.getData().getName();
-                            String userMobile = resp.getData().getMobile();
-                            String userId = resp.getData().getId();
+        String url = VERIFY_OTP;
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                response -> {
+                    try {
+                        if (response.getBoolean("response")) {
+                            JSONObject data = response.getJSONObject("data");
+                            String userName = data.getString("name");
+                            String userMobile = data.getString("mobile");
+                            String userId = data.getString("id");
 
                             SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -334,34 +476,25 @@ public class LoginFragment extends Fragment implements OtpVerificationBottomShee
                             editor.putString("userMobile", userMobile);
                             editor.putString("userId", userId);
                             editor.apply();
-                            Log.e( "UserId ssfqwf", userId);
+
+                            Log.e("UserId ssfqwf", userId);
                             showErrorGreen(R.string.Sign_Up_Successful);
                             navigateToHome();
                         } else {
                             Toast.makeText(getContext(), "Error in Sign Up", Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(getContext(), "Response body is null", Toast.LENGTH_SHORT).show();
-                        Log.e("API Response", "Response body is null");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } else {
+                },
+                error -> {
                     Toast.makeText(getContext(), "Response not successful", Toast.LENGTH_SHORT).show();
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.e("API Error", errorBody);
-                    } catch (Exception e) {
-                        Log.e("API Error", "Error parsing error body", e);
-                    }
+                    Log.e("API Error", error.toString());
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(Call<VerifyOtpModel> call, Throwable t) {
-                Log.e("onFailure", "Yes", t);
-            }
-        });
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
-
 
 
     private void showOtpDialog() {

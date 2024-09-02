@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:id="@+id/support_header"
-        android:background="@drawable/purple_background"
+        android:background="@drawable/img_login"
         android:orientation="vertical"
         >
         <TextView

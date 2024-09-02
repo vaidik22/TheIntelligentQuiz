@@ -9,7 +9,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/purple_background">
+        android:background="@drawable/img_login">
 
         <ImageView
             android:id="@+id/logo"
@@ -22,8 +22,8 @@
             android:id="@+id/appName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Earn Quiz Money"
-            android:textColor="@color/white"
+            android:text="The Intelligent Quiz"
+            android:textColor="@color/black"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_below="@id/logo"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Where knowledge turns into rewards"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="16sp"
             android:layout_below="@id/appName"
             android:layout_centerHorizontal="true"

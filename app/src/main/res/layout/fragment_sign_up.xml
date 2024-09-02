@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/topPanel"
-        android:background="@drawable/purple_background">
+        android:background="@drawable/img_login">
 
 
         <ImageView
@@ -22,7 +22,7 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:contentDescription="Back Button"
-            app:tint="@color/white" />
+            app:tint="@color/black" />
 
 
         <TextView
@@ -33,7 +33,7 @@
             android:layout_marginTop="16dp"
             android:text="Welcome"
             android:layout_marginLeft="30dp"
-            android:textColor="@android:color/white"
+            android:textColor="@color/black"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -47,7 +47,7 @@
             android:layout_marginLeft="30dp"
             android:maxLines="2"
             android:text="unlock your chance to win, sign up today!"
-            android:textColor="@android:color/white"
+            android:textColor="@color/black"
             android:textSize="16sp" />
 
         <TextView
@@ -58,7 +58,7 @@
             android:layout_marginTop="5pt"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textStyle="bold"
             />
 
@@ -86,7 +86,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textStyle="bold"
             />
 
@@ -117,8 +117,9 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="10dp"
             android:text="Get OTP"
+            android:drawableTint="@color/black"
             android:drawableEnd="@drawable/ic_arrow_right_1"
-            android:textColor="@android:color/white" />
+            android:textColor="@color/black" />
 
 
         <TextView
@@ -129,7 +130,7 @@
             android:text="Email ID"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textStyle="bold"
             />
 
@@ -158,9 +159,10 @@
             android:layout_alignParentEnd="true"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="10dp"
+            android:drawableTint="@color/black"
             android:text="Get OTP"
             android:drawableEnd="@drawable/ic_arrow_right_1"
-            android:textColor="@android:color/white" />
+            android:textColor="@color/black" />
 
 
 

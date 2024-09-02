@@ -1,12 +1,16 @@
 package com.binplus.TheIntelligentQuiz.Activity;
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_PROFILE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +18,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Fragments.AddMoneyFragment;
 import com.binplus.TheIntelligentQuiz.Fragments.HomePage;
 import com.binplus.TheIntelligentQuiz.Fragments.MyQuizFragment;
@@ -28,18 +35,17 @@ import com.binplus.TheIntelligentQuiz.Fragments.WithdrawFragment;
 import com.binplus.TheIntelligentQuiz.Model.ProfileModel;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.common.Common;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private BottomNavigationView bottomNavigationView;
@@ -54,14 +60,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private Toolbar navigationViewToolbar;
     private TextView toolbarTitle;
     ImageView back_icon;
-    Api apiInterface;
     ArrayList<ProfileModel.Data> profileList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
         initView();
         fetchProfileDetails();
         SharedPreferences sharedPreferences = getSharedPreferences("UserSession", Context.MODE_PRIVATE);
@@ -142,31 +146,82 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
 
     }
+//    private void fetchProfileDetails() {
+//        profileList.clear();
+//        JsonObject postData = new JsonObject();
+//        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//        postData.addProperty("user_id", authId);
+//
+//        Call<ProfileModel> call = apiInterface.getProfileApi(postData);
+//        call.enqueue(new Callback<ProfileModel>() {
+//            @Override
+//            public void onResponse(@NonNull Call<ProfileModel> call, @NonNull Response<ProfileModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    profileList.add(response.body().getData());
+//                    ProfileModel.Data profileData = profileList.get(0);
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putString("wallet_balance", profileData.getWallet());
+//                    editor.apply();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(@NonNull Call<ProfileModel> call, @NonNull Throwable t) {
+//            }
+//        });
+//    }
+
     private void fetchProfileDetails() {
         profileList.clear();
-        JsonObject postData = new JsonObject();
+
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
-        postData.addProperty("user_id", authId);
 
-        Call<ProfileModel> call = apiInterface.getProfileApi(postData);
-        call.enqueue(new Callback<ProfileModel>() {
-            @Override
-            public void onResponse(@NonNull Call<ProfileModel> call, @NonNull Response<ProfileModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    profileList.add(response.body().getData());
-                    ProfileModel.Data profileData = profileList.get(0);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("wallet_balance", profileData.getWallet());
-                    editor.apply();
+        String url = GET_PROFILE;
+
+
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("user_id", authId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, postData,
+                response -> {
+                    try {
+
+                        Gson gson = new Gson();
+                        ProfileModel profileModel = gson.fromJson(response.toString(), ProfileModel.class);
+
+                        if (profileModel != null && profileModel.getData() != null) {
+                            profileList.add(profileModel.getData());
+                            ProfileModel.Data profileData = profileList.get(0);
+
+                            // Update SharedPreferences
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("wallet_balance", profileData.getWallet());
+                            editor.apply();
+                        }
+                    } catch (Exception e) {
+                        Log.e("fetchProfileDetails", "Error parsing JSON response", e);
+                        Toast.makeText(getApplicationContext(), "Error parsing data", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    Log.e("fetchProfileDetails", "API call failed: " + error.toString());
+                    Toast.makeText(getApplicationContext(), "An error occurred: " + error.toString(), Toast.LENGTH_SHORT).show();
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(@NonNull Call<ProfileModel> call, @NonNull Throwable t) {
-            }
-        });
+
+        Volley.newRequestQueue(getApplicationContext()).add(jsonObjectRequest);
     }
+
     private void bottomNavigationHandler() {
         bottomNavigationView.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
 

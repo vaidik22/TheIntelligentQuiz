@@ -1,6 +1,8 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_CONTEST_DETAIL;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,23 +15,26 @@ import android.widget.LinearLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Adapters.DetailQuizAdapter;
 import com.binplus.TheIntelligentQuiz.Adapters.WinningListRankAdapter;
 import com.binplus.TheIntelligentQuiz.Model.QuizDetailModel;
 import com.binplus.TheIntelligentQuiz.Model.QuizModel;
 import com.binplus.TheIntelligentQuiz.R;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
-import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.OnFillButtonClickListener {
 
-    private Api apiInterface;
     private RecyclerView recyclerView;
     private DetailQuizAdapter quizAdapter;
     private List<QuizDetailModel.Datum> quizModelItemList;
@@ -61,7 +66,6 @@ public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.On
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
         if (getArguments() != null) {
             id = getArguments().getString(ARG_ID);
             saveIdToPreferences(id);
@@ -99,42 +103,135 @@ public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.On
         main.setVisibility(View.VISIBLE);
     }
 
+//    private void callUpcomingQuizDetailApi() {
+//        showLoading();
+//        JsonObject params = new JsonObject();
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//
+//        params.addProperty("user_id", authId);
+//        params.addProperty("contest_id", id);
+//
+//        Call<QuizDetailModel> call = apiInterface.getContestDetailApi(params);
+//        call.enqueue(new Callback<QuizDetailModel>() {
+//            @Override
+//            public void onResponse(Call<QuizDetailModel> call, Response<QuizDetailModel> response) {
+//                hideLoading();
+//                if (response.isSuccessful() && response.body() != null) {
+//                    QuizDetailModel quizModel = response.body();
+//                    ArrayList<QuizDetailModel.Datum> data = quizModel.getData();
+//                    quizModelItemList.clear();
+//                    quizModelItemList.addAll(data);
+//                    quizAdapter.notifyDataSetChanged();
+//                    List<QuizDetailModel.CurrentFill> currentFillList = extractCurrentFillList(data);
+//                    quizList2.clear();
+//                    quizList2.addAll(currentFillList);
+//                    quizAdapterWinning.notifyDataSetChanged();
+//                } else {
+//                    Log.e("QuizDetailFragment", "API call unsuccessful");
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<QuizDetailModel> call, Throwable t) {
+//                hideLoading();
+//                Log.e("QuizDetailFragment", "API call failed: " + t.getMessage());
+//            }
+//        });
+//    }
+
     private void callUpcomingQuizDetailApi() {
         showLoading();
-        JsonObject params = new JsonObject();
+        JSONObject params = new JSONObject();
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
 
-        params.addProperty("user_id", authId);
-        params.addProperty("contest_id", id);
+        try {
+            params.put("user_id", authId);
+            params.put("contest_id", id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            hideLoading();
+            return;
+        }
 
-        Call<QuizDetailModel> call = apiInterface.getContestDetailApi(params);
-        call.enqueue(new Callback<QuizDetailModel>() {
-            @Override
-            public void onResponse(Call<QuizDetailModel> call, Response<QuizDetailModel> response) {
-                hideLoading();
-                if (response.isSuccessful() && response.body() != null) {
-                    QuizDetailModel quizModel = response.body();
-                    ArrayList<QuizDetailModel.Datum> data = quizModel.getData();
-                    quizModelItemList.clear();
-                    quizModelItemList.addAll(data);
-                    quizAdapter.notifyDataSetChanged();
-                    List<QuizDetailModel.CurrentFill> currentFillList = extractCurrentFillList(data);
-                    quizList2.clear();
-                    quizList2.addAll(currentFillList);
-                    quizAdapterWinning.notifyDataSetChanged();
-                } else {
-                    Log.e("QuizDetailFragment", "API call unsuccessful");
+        String url = GET_CONTEST_DETAIL;
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+                response -> {
+                    hideLoading();
+                    try {
+                        if (response != null && response.has("data")) {
+                            JSONArray dataArray = response.getJSONArray("data");
+
+
+                            quizModelItemList.clear();
+                            for (int i = 0; i < dataArray.length(); i++) {
+                                JSONObject dataObject = dataArray.getJSONObject(i);
+                                QuizDetailModel.Datum datum = new QuizDetailModel.Datum();
+                                datum.setId(dataObject.optString("id"));
+                                datum.setName(dataObject.optString("name"));
+                                datum.setStart_date(dataObject.optString("start_date"));
+                                datum.setEnd_date(dataObject.optString("end_date"));
+                                datum.setDescription(dataObject.optString("description"));
+                                datum.setImage(dataObject.optString("image"));
+                                datum.setEntry(dataObject.optString("entry"));
+                                datum.setMax_entry(dataObject.optString("max_entry"));
+                                datum.setJoin_spot(dataObject.optString("join_spot"));
+                                datum.setAvailable_spot(dataObject.optString("available_spot"));
+                                datum.setContest_status(dataObject.optString("contest_status"));
+                                datum.setPrize_pool(dataObject.optString("prize_pool"));
+                                datum.setDate_created(dataObject.optString("date_created"));
+                                datum.setTop_users(dataObject.optString("top_users"));
+                                datum.setParticipants(dataObject.optString("participants"));
+                                datum.setJoin_contest_status(dataObject.optInt("join_contest_status"));
+                                datum.setComplete_status(dataObject.optInt("complete_status"));
+                                JSONArray pointsArray = dataObject.optJSONArray("points");
+                                ArrayList<QuizDetailModel.Point> pointsList = new ArrayList<>();
+                                if (pointsArray != null) {
+                                    for (int j = 0; j < pointsArray.length(); j++) {
+                                        JSONObject pointObject = pointsArray.getJSONObject(j);
+                                        QuizDetailModel.Point point = new QuizDetailModel.Point();
+                                        point.setTop_winner(pointObject.optString("top_winner"));
+                                        point.setPoints(pointObject.optString("points"));
+                                        pointsList.add(point);
+                                    }
+                                }
+                                datum.setPoints(pointsList);
+                                JSONArray currentFillArray = dataObject.optJSONArray("current_fill");
+                                ArrayList<QuizDetailModel.CurrentFill> currentFillList = new ArrayList<>();
+                                if (currentFillArray != null) {
+                                    for (int k = 0; k < currentFillArray.length(); k++) {
+                                        JSONObject fillObject = currentFillArray.getJSONObject(k);
+                                        QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
+                                        currentFill.setTop_winner(fillObject.optString("top_winner"));
+                                        currentFill.setPoints(fillObject.optString("points"));
+                                        currentFillList.add(currentFill);
+                                    }
+                                }
+                                datum.setCurrent_fill(currentFillList);
+
+                                quizModelItemList.add(datum);
+                            }
+                            quizAdapter.notifyDataSetChanged();
+                            List<QuizDetailModel.CurrentFill> currentFillList = extractCurrentFillList(quizModelItemList);
+                            quizList2.clear();
+                            quizList2.addAll(currentFillList);
+                            quizAdapterWinning.notifyDataSetChanged();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.e("QuizDetailFragment", "Error parsing response: " + e.getMessage());
+                    }
+                },
+                error -> {
+                    hideLoading();
+                    Log.e("QuizDetailFragment", "API call failed: " + error.getMessage());
                 }
-            }
-
-            @Override
-            public void onFailure(Call<QuizDetailModel> call, Throwable t) {
-                hideLoading();
-                Log.e("QuizDetailFragment", "API call failed: " + t.getMessage());
-            }
-        });
+        );
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
+
 
     private List<QuizDetailModel.CurrentFill> extractCurrentFillList(List<QuizDetailModel.Datum> datumList) {
         List<QuizDetailModel.CurrentFill> currentFillList = new ArrayList<>();

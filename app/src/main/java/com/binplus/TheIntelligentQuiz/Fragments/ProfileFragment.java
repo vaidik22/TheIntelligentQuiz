@@ -2,10 +2,14 @@ package com.binplus.TheIntelligentQuiz.Fragments;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.BASE_URL_IMAGE;
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_CONFIG;
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_PROFILE;
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.UPDATE_PROFILE;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,23 +39,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Activity.MainActivity;
 import com.binplus.TheIntelligentQuiz.Model.ProfileModel;
 import com.binplus.TheIntelligentQuiz.Model.UpdateProfileModel;
 import com.binplus.TheIntelligentQuiz.R;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
 import com.binplus.TheIntelligentQuiz.retrofit.ConfigModel;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 
 public class ProfileFragment extends Fragment {
@@ -67,7 +74,7 @@ public class ProfileFragment extends Fragment {
     CircleImageView iv_cir;
     ArrayList<ProfileModel.Data> profileList = new ArrayList<>();
     ArrayList<UpdateProfileModel.Data> updatedProfileList = new ArrayList<>();
-    Api apiInterface;
+     
     TextView tv_name,tv_user_mobile,tv_total_played,tv_total_spent,tv_total_earned;
     EditText username,mobile_number,email,age,state,district,address,et_facebook,whatsaap,et_refer;
     Button btn_submit_basic,btn_submit_social,btn_submit_refer;
@@ -93,7 +100,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
+
          updateProfileModel = new UpdateProfileModel();
 
     }
@@ -347,64 +354,140 @@ public class ProfileFragment extends Fragment {
     dialog.show ();
 }
 
+//    private void fetchConfigData() {
+//        Call<ConfigModel> call = apiInterface.getIndexApi();
+//        call.enqueue(new Callback<ConfigModel>() {
+//            @Override
+//            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    ConfigModel configModel = response.body();
+//                    if (configModel.getData() != null) {
+//                        instagramLink = configModel.getData().getInstagram_link();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ConfigModel> call, Throwable t) {
+//                // Handle the error
+//            }
+//        });
+//    }
+
     private void fetchConfigData() {
-        Call<ConfigModel> call = apiInterface.getIndexApi();
-        call.enqueue(new Callback<ConfigModel>() {
-            @Override
-            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ConfigModel configModel = response.body();
-                    if (configModel.getData() != null) {
-                        instagramLink = configModel.getData().getInstagram_link();
-                    }
-                }
-            }
+        String url = GET_CONFIG;
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
 
-            @Override
-            public void onFailure(Call<ConfigModel> call, Throwable t) {
-                // Handle the error
-            }
-        });
+                        Gson gson = new Gson();
+                        ConfigModel configModel = gson.fromJson(response.toString(), ConfigModel.class);
+
+                        if (configModel != null && configModel.getData() != null) {
+                            instagramLink = configModel.getData().getInstagram_link();
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+                    Log.e("FetchConfigData", "API call failed: " + error.toString());
+
+                }
+        );
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
+//    private void fetchConfigDataFaceBook() {
+//        Call<ConfigModel> call = apiInterface.getIndexApi();
+//        call.enqueue(new Callback<ConfigModel>() {
+//            @Override
+//            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    ConfigModel configModel = response.body();
+//                    if (configModel.getData() != null) {
+//                        facebookUrl = configModel.getData().getFacebook_link();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ConfigModel> call, Throwable t) {
+//                // Handle the error
+//            }
+//        });
+//    }
+//    private void fetchConfigDataTwitter() {
+//        Call<ConfigModel> call = apiInterface.getIndexApi();
+//        call.enqueue(new Callback<ConfigModel>() {
+//            @Override
+//            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    ConfigModel configModel = response.body();
+//                    if (configModel.getData() != null) {
+//                        twitterLink= configModel.getData().getTwitter_link();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ConfigModel> call, Throwable t) {
+//                // Handle the error
+//            }
+//        });
+//    }
+
     private void fetchConfigDataFaceBook() {
-        Call<ConfigModel> call = apiInterface.getIndexApi();
-        call.enqueue(new Callback<ConfigModel>() {
-            @Override
-            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ConfigModel configModel = response.body();
-                    if (configModel.getData() != null) {
-                        facebookUrl = configModel.getData().getFacebook_link();
-                    }
-                }
-            }
+        String url = GET_CONFIG;
 
-            @Override
-            public void onFailure(Call<ConfigModel> call, Throwable t) {
-                // Handle the error
-            }
-        });
+        // Create a JsonObjectRequest for GET method
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+
+                        Gson gson = new Gson();
+                        ConfigModel configModel = gson.fromJson(response.toString(), ConfigModel.class);
+
+                        if (configModel != null && configModel.getData() != null) {
+                            facebookUrl = configModel.getData().getFacebook_link();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                },
+                error -> {
+                    Log.e("FetchConfigDataFaceBook", "API call failed: " + error.toString());
+
+                }
+        );
+
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
     private void fetchConfigDataTwitter() {
-        Call<ConfigModel> call = apiInterface.getIndexApi();
-        call.enqueue(new Callback<ConfigModel>() {
-            @Override
-            public void onResponse(Call<ConfigModel> call, Response<ConfigModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ConfigModel configModel = response.body();
-                    if (configModel.getData() != null) {
-                        twitterLink= configModel.getData().getTwitter_link();
+        String url =GET_CONFIG;
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        Gson gson = new Gson();
+                        ConfigModel configModel = gson.fromJson(response.toString(), ConfigModel.class);
+
+                        if (configModel != null && configModel.getData() != null) {
+                            twitterLink = configModel.getData().getTwitter_link();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+                },
+                error -> {
+                    Log.e("FetchConfigDataTwitter", "API call failed: " + error.toString());
+
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ConfigModel> call, Throwable t) {
-                // Handle the error
-            }
-        });
+        );
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
-
 
     private void callInstagramLink() {
         if (instagramLink != null && !instagramLink.isEmpty()) {
@@ -435,66 +518,119 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void fetchProfileDetails() {
-        profileList.clear();
-        JsonObject postData = new JsonObject();
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", MODE_PRIVATE);
-        String authId = sharedPreferences.getString("userId", "Default Id");
-        postData.addProperty("user_id", authId);
+//    private void fetchProfileDetails() {
+//        profileList.clear();
+//        JsonObject postData = new JsonObject();
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//        postData.addProperty("user_id", authId);
+//
+//        Call<ProfileModel> call = apiInterface.getProfileApi(postData);
+//        call.enqueue(new Callback<ProfileModel>() {
+//            @Override
+//            public void onResponse(@NonNull Call<ProfileModel> call, @NonNull Response<ProfileModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                        profileList.add(response.body().getData());
+//                    updateUI(profileList);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(@NonNull Call<ProfileModel> call, @NonNull Throwable t) {
+//                // Handle failure
+//            }
+//        });
+//    }
+private void fetchProfileDetails() {
+    profileList.clear();
 
-        Call<ProfileModel> call = apiInterface.getProfileApi(postData);
-        call.enqueue(new Callback<ProfileModel>() {
-            @Override
-            public void onResponse(@NonNull Call<ProfileModel> call, @NonNull Response<ProfileModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                        profileList.add(response.body().getData());
-                    updateUI(profileList);
-                }
-            }
+    SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+    String authId = sharedPreferences.getString("userId", "Default Id");
 
-            @Override
-            public void onFailure(@NonNull Call<ProfileModel> call, @NonNull Throwable t) {
-                // Handle failure
-            }
-        });
+    String url = GET_PROFILE;
+    JSONObject postData = new JSONObject();
+    try {
+        postData.put("user_id", authId);
+    } catch (JSONException e) {
+        e.printStackTrace();
+        Toast.makeText(getContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
+        return;
     }
+
+    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, postData,
+            response -> {
+                try {
+                    Gson gson = new Gson();
+                    ProfileModel profileModel = gson.fromJson(response.toString(), ProfileModel.class);
+
+                    if (profileModel != null && profileModel.getData() != null) {
+                        profileList.add(profileModel.getData());
+                        updateUI(profileList);
+                    }
+                } catch (Exception e) {
+                    Log.e("fetchProfileDetails", "Error parsing JSON response", e);
+                    Toast.makeText(getContext(), "Error parsing data", Toast.LENGTH_SHORT).show();
+                }
+            },
+            error -> {
+                Log.e("fetchProfileDetails", "API call failed: " + error.toString());
+                Toast.makeText(getContext(), "An error occurred: " + error.toString(), Toast.LENGTH_SHORT).show();
+            }
+    );
+
+    Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
+}
+
     private void updateProfile(String imageUri) {
         updatedProfileList.clear();
-        JsonObject postData = new JsonObject();
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", MODE_PRIVATE);
+
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
-        postData.addProperty("update_profile", "1");
-        postData.addProperty("user_id", authId);
-        postData.addProperty("profile", imageUri);
-        postData.addProperty("name", username.getText().toString());
-        postData.addProperty("email", email.getText().toString());
-        postData.addProperty("mobile", mobile_number.getText().toString());
 
+        String url = UPDATE_PROFILE;
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("update_profile", "1");
+            postData.put("user_id", authId);
+            postData.put("profile", imageUri);
+            postData.put("name", username.getText().toString());
+            postData.put("email", email.getText().toString());
+            postData.put("mobile", mobile_number.getText().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Call<UpdateProfileModel> call = apiInterface.getUpdateProfileApi(postData);
-        call.enqueue(new Callback<UpdateProfileModel>() {
-            @Override
-            public void onResponse(@NonNull Call<UpdateProfileModel> call, @NonNull Response<UpdateProfileModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UpdateProfileModel updateProfileModel = response.body();
-                    String message = updateProfileModel.getMessage();
-                    if (updateProfileModel.isResponse()) {
-                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                        fetchProfileDetails();
-                    } else {
-                        Toast.makeText(getContext(), "Failed to update profile: " + message, Toast.LENGTH_SHORT).show();
+        // Create a JsonObjectRequest
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, postData,
+                response -> {
+                    try {
+                        // Parse the response
+                        Gson gson = new Gson();
+                        UpdateProfileModel updateProfileModel = gson.fromJson(response.toString(), UpdateProfileModel.class);
+                        String message = updateProfileModel.getMessage();
+                        if (updateProfileModel.isResponse()) {
+                            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                            fetchProfileDetails();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to update profile: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e("updateProfile", "Error parsing JSON response", e);
+                        Toast.makeText(getContext(), "Error parsing data", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(getContext(), "Failed to update profile. Please try again.", Toast.LENGTH_SHORT).show();
+                },
+                error -> {
+                    Log.e("updateProfile", "API call failed: " + error.toString());
+                    Toast.makeText(getContext(), "An error occurred: " + error.toString(), Toast.LENGTH_SHORT).show();
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(@NonNull Call<UpdateProfileModel> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "An error occurred: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Adding the request to the queue
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
     @SuppressLint("SetTextI18n")
     private void updateUI(ArrayList<ProfileModel.Data> profile) {
         String imageUrl = BASE_URL_IMAGE + profile.get(0).getProfile();

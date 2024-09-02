@@ -1,5 +1,7 @@
 package com.binplus.TheIntelligentQuiz.Model;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class QuizDetailModel {
@@ -52,7 +54,7 @@ public class QuizDetailModel {
         }
     }
 
-    public class Datum{
+    public static class Datum{
         public String id;
         public String name;
         public String start_date;
@@ -226,7 +228,7 @@ public class QuizDetailModel {
         }
     }
 
-    public class Point{
+    public static class Point{
         public String top_winner;
         public String points;
 

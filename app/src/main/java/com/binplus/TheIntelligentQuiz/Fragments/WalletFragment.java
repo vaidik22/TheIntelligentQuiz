@@ -16,9 +16,6 @@ import com.binplus.TheIntelligentQuiz.Adapters.ViewPagerAdapterWallet;
 import com.binplus.TheIntelligentQuiz.Model.ProfileModel;
 import com.binplus.TheIntelligentQuiz.Model.TransactionModel;
 import com.binplus.TheIntelligentQuiz.R;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
-import com.denzcoskun.imageslider.adapters.ViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -29,7 +26,7 @@ public class WalletFragment extends Fragment {
     ViewPager viewPager;
     ViewPagerAdapterWallet viewPagerAdapter;
     ArrayList<TransactionModel.Datum> transactionList = new ArrayList<>();
-    Api apiInterface;
+     
     String key = "2";
     ArrayList<ProfileModel.Data> profile = new ArrayList<>();
     TextView available_balance;
@@ -48,7 +45,7 @@ public class WalletFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
+
 
     }
 

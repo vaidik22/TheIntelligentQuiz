@@ -2,6 +2,9 @@ package com.binplus.TheIntelligentQuiz.Fragments;
 
 
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.CONTEST_UPDATE_SCORE;
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_QUESTION_BY_CONTEST;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
@@ -28,23 +31,24 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Activity.HomeActivity;
 import com.binplus.TheIntelligentQuiz.Model.QuestionModel;
-import com.binplus.TheIntelligentQuiz.Model.UpdateScoreModel;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.common.Common;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class QuestionsFragment extends Fragment {
 
@@ -54,7 +58,7 @@ public class QuestionsFragment extends Fragment {
     private ArrayList<QuestionModel.Datum> questions;
     private int currentQuestionIndex = 0;
     private CountDownTimer timer;
-    Api apiInterface;
+     
     private String id;
     private ProgressBar progressBar;
     CardView question_card;
@@ -86,7 +90,6 @@ public class QuestionsFragment extends Fragment {
         startDate = df.format(Calendar.getInstance().getTime());
         //log start date
         Log.d("startDate...", startDate);
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
         common = new Common(getActivity());
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         id = sharedPreferences.getString("contest_id", "Default Id");
@@ -248,80 +251,190 @@ public class QuestionsFragment extends Fragment {
         textinput_error = view.findViewById(R.id.textinput_error);
     }
 
+//    private void fetchQuestions() {
+//        showLoading();
+//        JsonObject params = new JsonObject();
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//
+//        params.addProperty("user_id", authId);
+//        params.addProperty("contest_id", id);
+//
+//        Call<QuestionModel> call = apiInterface.getQuestionApi(params);
+//        call.enqueue(new Callback<QuestionModel>() {
+//            @Override
+//            public void onResponse(Call<QuestionModel> call, Response<QuestionModel> response) {
+//                hideLoading();
+//                if (response.isSuccessful() && response.body() != null) {
+//                    questions = response.body().getData();
+//                    if (!questions.isEmpty()) {
+//                        displayQuestion(questions.get(currentQuestionIndex));
+//                        startTimer();
+//                    } else {
+//                        Toast.makeText(getContext(), "No questions available", Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<QuestionModel> call, Throwable t) {
+//                hideLoading();
+//                Toast.makeText(getContext(), "Failed to fetch questions", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
+
+
     private void fetchQuestions() {
         showLoading();
-        JsonObject params = new JsonObject();
+
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
 
-        params.addProperty("user_id", authId);
-        params.addProperty("contest_id", id);
+        String url = GET_QUESTION_BY_CONTEST;
+        JSONObject params = new JSONObject();
+        try {
+            params.put("user_id", authId);
+            params.put("contest_id", id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            hideLoading();
+            Toast.makeText(getContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Call<QuestionModel> call = apiInterface.getQuestionApi(params);
-        call.enqueue(new Callback<QuestionModel>() {
-            @Override
-            public void onResponse(Call<QuestionModel> call, Response<QuestionModel> response) {
-                hideLoading();
-                if (response.isSuccessful() && response.body() != null) {
-                    questions = response.body().getData();
-                    if (!questions.isEmpty()) {
-                        displayQuestion(questions.get(currentQuestionIndex));
-                        startTimer();
-                    } else {
-                        Toast.makeText(getContext(), "No questions available", Toast.LENGTH_SHORT).show();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+                response -> {
+                    hideLoading();
+                    try {
+
+                        Gson gson = new Gson();
+                        QuestionModel questionModel = gson.fromJson(response.toString(), QuestionModel.class);
+
+                        if (questionModel != null && questionModel.getData() != null) {
+                            questions = questionModel.getData();
+                            if (!questions.isEmpty()) {
+                                displayQuestion(questions.get(currentQuestionIndex));
+                                startTimer();
+                            } else {
+                                Toast.makeText(getContext(), "No questions available", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e("fetchQuestions", "Error parsing JSON response", e);
+                        Toast.makeText(getContext(), "Error parsing data", Toast.LENGTH_SHORT).show();
                     }
+                },
+                error -> {
+                    hideLoading();
+                    Log.e("fetchQuestions", "API call failed: " + error.toString());
+                    Toast.makeText(getContext(), "Failed to fetch questions", Toast.LENGTH_SHORT).show();
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(Call<QuestionModel> call, Throwable t) {
-                hideLoading();
-                Toast.makeText(getContext(), "Failed to fetch questions", Toast.LENGTH_SHORT).show();
-            }
-        });
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
 
-    private void callUpdateScoreApi(){
-        JsonObject params = new JsonObject();
+
+//    private void callUpdateScoreApi(){
+//        JsonObject params = new JsonObject();
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String authId = sharedPreferences.getString("userId", "Default Id");
+//
+//        params.addProperty("user_id", authId);
+//        params.addProperty("contest_id", id);
+//        params.addProperty("start_time", startDate);
+//        params.addProperty("end_time", endDate);
+//        params.addProperty("questions_answered", totalQuestions);
+//        params.addProperty("questions_attended", questionsAttended);
+//        params.addProperty("correct_answers", correctAnswers);
+//        params.addProperty("incorrect_answers", incorrectAnswers);
+//        params.addProperty("score", score);
+//
+//        Call<UpdateScoreModel> call = apiInterface.getContestUpdateScore(params);
+//        call.enqueue(new Callback<UpdateScoreModel>() {
+//            @Override
+//            public void onResponse(Call<UpdateScoreModel> call, Response<UpdateScoreModel> response) {
+//                if (response.isSuccessful()) {
+//                    if (getActivity() != null) {
+//                        showErrorgreen(R.string.score_updated);
+//                    }
+//                } else {
+//                    if (getActivity() != null) {
+//                        Toast.makeText(getActivity(), "Failed to update score", Toast.LENGTH_SHORT).show();
+//                        showError(R.string.failed_to_update_score);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<UpdateScoreModel> call, Throwable t) {
+//                if (getActivity() != null) {
+//                    Toast.makeText(getActivity(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//
+//        });
+//    }
+
+    private void callUpdateScoreApi() {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
 
-        params.addProperty("user_id", authId);
-        params.addProperty("contest_id", id);
-        params.addProperty("start_time", startDate);
-        params.addProperty("end_time", endDate);
-        params.addProperty("questions_answered", totalQuestions);
-        params.addProperty("questions_attended", questionsAttended);
-        params.addProperty("correct_answers", correctAnswers);
-        params.addProperty("incorrect_answers", incorrectAnswers);
-        params.addProperty("score", score);
+        // Create the JSON object for the request body
+        JSONObject params = new JSONObject();
+        try {
+            params.put("user_id", authId);
+            params.put("contest_id", id);
+            params.put("start_time", startDate);
+            params.put("end_time", endDate);
+            params.put("questions_answered", totalQuestions);
+            params.put("questions_attended", questionsAttended);
+            params.put("correct_answers", correctAnswers);
+            params.put("incorrect_answers", incorrectAnswers);
+            params.put("score", score);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(getActivity(), "Error creating request data", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Call<UpdateScoreModel> call = apiInterface.getContestUpdateScore(params);
-        call.enqueue(new Callback<UpdateScoreModel>() {
-            @Override
-            public void onResponse(Call<UpdateScoreModel> call, Response<UpdateScoreModel> response) {
-                if (response.isSuccessful()) {
-                    if (getActivity() != null) {
-                        showErrorgreen(R.string.score_updated);
+        String url = CONTEST_UPDATE_SCORE;
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+                response -> {
+                    // Handle successful response
+                    if (response != null) {
+                        try {
+                            boolean isSuccess = response.getBoolean("success"); // Replace with actual success check based on your API response
+                            if (isSuccess) {
+                                if (getActivity() != null) {
+                                    showErrorgreen(R.string.score_updated);
+                                }
+                            } else {
+                                if (getActivity() != null) {
+                                    Toast.makeText(getActivity(), "Failed to update score", Toast.LENGTH_SHORT).show();
+                                    showError(R.string.failed_to_update_score);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            if (getActivity() != null) {
+                                Toast.makeText(getActivity(), "Error parsing response", Toast.LENGTH_SHORT).show();
+                            }
+                        }
                     }
-                } else {
+                },
+                error -> {
+
                     if (getActivity() != null) {
-                        Toast.makeText(getActivity(), "Failed to update score", Toast.LENGTH_SHORT).show();
-                        showError(R.string.failed_to_update_score);
+                        Toast.makeText(getActivity(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(Call<UpdateScoreModel> call, Throwable t) {
-                if (getActivity() != null) {
-                    Toast.makeText(getActivity(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        });
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
-
 
     private void displayQuestion(QuestionModel.Datum question) {
         tvQuestion.setText(question.getQuestion());

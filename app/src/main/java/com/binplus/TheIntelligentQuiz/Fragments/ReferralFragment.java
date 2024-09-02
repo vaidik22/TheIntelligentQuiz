@@ -1,5 +1,7 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.REFER_EARN;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,19 +16,21 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Adapters.ReferAdapter;
 import com.binplus.TheIntelligentQuiz.Model.ReferModel;
 import com.binplus.TheIntelligentQuiz.R;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class ReferralFragment extends Fragment {
 
@@ -38,7 +42,6 @@ public class ReferralFragment extends Fragment {
     private RecyclerView referRecyclerView;
     private ReferAdapter referAdapter;
     private List<ReferModel.Data> referList = new ArrayList<>();
-    Api apiInterface;
 
     public ReferralFragment() {
         // Required empty public constructor
@@ -65,37 +68,74 @@ public class ReferralFragment extends Fragment {
         setupRecyclerView();
         callReferralApi();
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String userName = sharedPreferences.getString("userName", "Default name");
         return view;
     }
+
+//    private void callReferralApi() {
+//        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+//        String userId = sharedPreferences.getString("userId", "Default Id");
+//        String userName = sharedPreferences.getString("userName", "Default name");
+//
+//        JsonObject object = new JsonObject();
+//        object.addProperty("user_id", userId);
+//
+//         
+//        Call<ReferModel> call = apiInterface.getReferApi(object);
+//        call.enqueue(new Callback<ReferModel>() {
+//            @Override
+//            public void onResponse(Call<ReferModel> call, Response<ReferModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    updateUI(response.body());
+//                    Log.d("ReferralFragment", "Data loaded successfully, referList size: " + referList.size());
+//                } else {
+//                    Toast.makeText(getContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ReferModel> call, Throwable t) {
+//                Toast.makeText(getContext(), "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
 
     private void callReferralApi() {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String userId = sharedPreferences.getString("userId", "Default Id");
-        String userName = sharedPreferences.getString("userName", "Default name");
 
-        JsonObject object = new JsonObject();
-        object.addProperty("user_id", userId);
+        String url = REFER_EARN;
 
-        apiInterface = RetrofitClient.getRetrofitInstance().create(Api.class);
-        Call<ReferModel> call = apiInterface.getReferApi(object);
-        call.enqueue(new Callback<ReferModel>() {
-            @Override
-            public void onResponse(Call<ReferModel> call, Response<ReferModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    updateUI(response.body());
-                    Log.d("ReferralFragment", "Data loaded successfully, referList size: " + referList.size());
-                } else {
-                    Toast.makeText(getContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show();
+        // Setting up parameters for the request
+        JSONObject params = new JSONObject();
+        try {
+            params.put("user_id", userId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // Create a JsonObjectRequest
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+                response -> {
+                    try {
+                        Gson gson = new Gson();
+                        ReferModel referModel = gson.fromJson(response.toString(), ReferModel.class);
+
+                        if (referModel != null) {
+                            updateUI(referModel);
+                        } else {
+                            Toast.makeText(getContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e("ReferralFragment", "Error parsing JSON response", e);
+                    }
+                },
+                error -> {
+                    Toast.makeText(getContext(), "API call failed: " + error.toString(), Toast.LENGTH_SHORT).show();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ReferModel> call, Throwable t) {
-                Toast.makeText(getContext(), "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        );
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
 
 
     private void updateUI(ReferModel referModel) {

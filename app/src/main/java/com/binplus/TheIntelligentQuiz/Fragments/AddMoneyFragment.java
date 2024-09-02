@@ -1,8 +1,11 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_CONFIG;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +14,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Adapters.AddMoneyAdapter;
 import com.binplus.TheIntelligentQuiz.Interfaces.OnMoneySelectedListener;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.common.Common;
-import com.binplus.TheIntelligentQuiz.retrofit.Api;
 import com.binplus.TheIntelligentQuiz.retrofit.ConfigModel;
-import com.binplus.TheIntelligentQuiz.retrofit.RetrofitClient;
+import com.google.gson.Gson;
 import com.razorpay.Checkout;
 import com.razorpay.PaymentResultListener;
 
@@ -33,15 +37,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 public class AddMoneyFragment extends Fragment implements OnMoneySelectedListener, PaymentResultListener {
 
     private RecyclerView recyclerView;
     private AddMoneyAdapter addMoneyAdapter;
-    Api apiService;
+    
     EditText et_money;
     TextView tv_open_wallet;
     Common common;
@@ -142,34 +144,72 @@ public class AddMoneyFragment extends Fragment implements OnMoneySelectedListene
         Toast.makeText(getContext(), "Payment Failed: " + s, Toast.LENGTH_SHORT).show();
         // Handle failed payment here
     }
+//    private void fetchAddMoneyValue() {
+//        progressBar.setVisibility(View.VISIBLE);
+//        apiService = RetrofitClient.getRetrofitInstance().create(Api.class);
+//        Call<ConfigModel> call = apiService.getIndexApi();
+//
+//        call.enqueue(new Callback<ConfigModel>() {
+//            @Override
+//            public void onResponse(@NonNull Call<ConfigModel> call, @NonNull Response<ConfigModel> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    progressBar.setVisibility(View.GONE);
+//                    recyclerView.setVisibility(View.VISIBLE);
+//                    ConfigModel configModel = response.body();
+//                    String addMoneyValue = configModel.getData().getAdd_money_value();
+//                    try {
+//                        List<String> moneyList = parseAddMoneyValue(addMoneyValue);
+//                        updateAdapter(moneyList);
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(@NonNull Call<ConfigModel> call, @NonNull Throwable t) {
+//                // Handle failure
+//            }
+//        });
+//    }
+
     private void fetchAddMoneyValue() {
         progressBar.setVisibility(View.VISIBLE);
-        apiService = RetrofitClient.getRetrofitInstance().create(Api.class);
-        Call<ConfigModel> call = apiService.getIndexApi();
 
-        call.enqueue(new Callback<ConfigModel>() {
-            @Override
-            public void onResponse(@NonNull Call<ConfigModel> call, @NonNull Response<ConfigModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    progressBar.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    ConfigModel configModel = response.body();
-                    String addMoneyValue = configModel.getData().getAdd_money_value();
+        String url = GET_CONFIG;
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
                     try {
-                        List<String> moneyList = parseAddMoneyValue(addMoneyValue);
-                        updateAdapter(moneyList);
+                        Gson gson = new Gson();
+                        ConfigModel configModel = gson.fromJson(response.toString(), ConfigModel.class);
+
+                        if (configModel != null) {
+                            progressBar.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.VISIBLE);
+
+                            String addMoneyValue = configModel.getData().getAdd_money_value();
+                            List<String> moneyList = parseAddMoneyValue(addMoneyValue);
+                            updateAdapter(moneyList);
+                        } else {
+                            Log.e("FetchAddMoneyValue", "ConfigModel is null");
+                            progressBar.setVisibility(View.GONE);
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        progressBar.setVisibility(View.GONE);
                     }
+                },
+                error -> {
+                    Log.e("FetchAddMoneyValue", "API call failed: " + error.toString());
+                    progressBar.setVisibility(View.GONE);
                 }
-            }
+        );
 
-            @Override
-            public void onFailure(@NonNull Call<ConfigModel> call, @NonNull Throwable t) {
-                // Handle failure
-            }
-        });
+        // Add the request to the RequestQueue.
+        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
     }
+
 
     private List<String> parseAddMoneyValue(String addMoneyValue) throws JSONException {
         JSONArray jsonArray = new JSONArray(addMoneyValue);
