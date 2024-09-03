@@ -19,6 +19,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Fragments.AddMoneyFragment;
@@ -219,7 +220,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         );
 
 
-        Volley.newRequestQueue(getApplicationContext()).add(jsonObjectRequest);
+        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+        requestQueue.add(jsonObjectRequest);
     }
 
     private void bottomNavigationHandler() {
