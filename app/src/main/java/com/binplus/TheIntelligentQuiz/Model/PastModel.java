@@ -42,7 +42,7 @@ public class PastModel {
             this.data = data;
         }
     }
-    public class Datum{
+    public static class Datum{
         public String id;
         public String name;
         public String start_date;

@@ -24,6 +24,7 @@ import com.binplus.TheIntelligentQuiz.Adapters.WinningListRankAdapter;
 import com.binplus.TheIntelligentQuiz.Model.QuizDetailModel;
 import com.binplus.TheIntelligentQuiz.Model.QuizModel;
 import com.binplus.TheIntelligentQuiz.R;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -142,11 +143,14 @@ public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.On
 
     private void callUpcomingQuizDetailApi() {
         showLoading();
-        JSONObject params = new JSONObject();
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String authId = sharedPreferences.getString("userId", "Default Id");
+        String url = GET_CONTEST_DETAIL;
 
+        // Create a JSONObject for the parameters
+        JSONObject params = new JSONObject();
         try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+            String authId = sharedPreferences.getString("userId", "Default Id");
+
             params.put("user_id", authId);
             params.put("contest_id", id);
         } catch (JSONException e) {
@@ -155,72 +159,27 @@ public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.On
             return;
         }
 
-        String url = GET_CONTEST_DETAIL;
+        // Create a JsonObjectRequest
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
                 response -> {
                     hideLoading();
                     try {
-                        if (response != null && response.has("data")) {
-                            JSONArray dataArray = response.getJSONArray("data");
-
-
+                        Gson gson = new Gson();
+                        QuizDetailModel quizModel = gson.fromJson(response.toString(), QuizDetailModel.class);
+                        if (quizModel != null && quizModel.getData() != null) {
+                            ArrayList<QuizDetailModel.Datum> data = quizModel.getData();
                             quizModelItemList.clear();
-                            for (int i = 0; i < dataArray.length(); i++) {
-                                JSONObject dataObject = dataArray.getJSONObject(i);
-                                QuizDetailModel.Datum datum = new QuizDetailModel.Datum();
-                                datum.setId(dataObject.optString("id"));
-                                datum.setName(dataObject.optString("name"));
-                                datum.setStart_date(dataObject.optString("start_date"));
-                                datum.setEnd_date(dataObject.optString("end_date"));
-                                datum.setDescription(dataObject.optString("description"));
-                                datum.setImage(dataObject.optString("image"));
-                                datum.setEntry(dataObject.optString("entry"));
-                                datum.setMax_entry(dataObject.optString("max_entry"));
-                                datum.setJoin_spot(dataObject.optString("join_spot"));
-                                datum.setAvailable_spot(dataObject.optString("available_spot"));
-                                datum.setContest_status(dataObject.optString("contest_status"));
-                                datum.setPrize_pool(dataObject.optString("prize_pool"));
-                                datum.setDate_created(dataObject.optString("date_created"));
-                                datum.setTop_users(dataObject.optString("top_users"));
-                                datum.setParticipants(dataObject.optString("participants"));
-                                datum.setJoin_contest_status(dataObject.optInt("join_contest_status"));
-                                datum.setComplete_status(dataObject.optInt("complete_status"));
-                                JSONArray pointsArray = dataObject.optJSONArray("points");
-                                ArrayList<QuizDetailModel.Point> pointsList = new ArrayList<>();
-                                if (pointsArray != null) {
-                                    for (int j = 0; j < pointsArray.length(); j++) {
-                                        JSONObject pointObject = pointsArray.getJSONObject(j);
-                                        QuizDetailModel.Point point = new QuizDetailModel.Point();
-                                        point.setTop_winner(pointObject.optString("top_winner"));
-                                        point.setPoints(pointObject.optString("points"));
-                                        pointsList.add(point);
-                                    }
-                                }
-                                datum.setPoints(pointsList);
-                                JSONArray currentFillArray = dataObject.optJSONArray("current_fill");
-                                ArrayList<QuizDetailModel.CurrentFill> currentFillList = new ArrayList<>();
-                                if (currentFillArray != null) {
-                                    for (int k = 0; k < currentFillArray.length(); k++) {
-                                        JSONObject fillObject = currentFillArray.getJSONObject(k);
-                                        QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
-                                        currentFill.setTop_winner(fillObject.optString("top_winner"));
-                                        currentFill.setPoints(fillObject.optString("points"));
-                                        currentFillList.add(currentFill);
-                                    }
-                                }
-                                datum.setCurrent_fill(currentFillList);
-
-                                quizModelItemList.add(datum);
-                            }
+                            quizModelItemList.addAll(data);
                             quizAdapter.notifyDataSetChanged();
-                            List<QuizDetailModel.CurrentFill> currentFillList = extractCurrentFillList(quizModelItemList);
+
+                            // Extract only the "max fill" data
+                            List<QuizDetailModel.CurrentFill> maxFillList = extractMaxFillList(data);
                             quizList2.clear();
-                            quizList2.addAll(currentFillList);
+                            quizList2.addAll(maxFillList);
                             quizAdapterWinning.notifyDataSetChanged();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.e("QuizDetailFragment", "Error parsing response: " + e.getMessage());
+                    } catch (Exception e) {
+                        Log.e("QuizDetailFragment", "JSON parsing error: " + e.getMessage());
                     }
                 },
                 error -> {
@@ -228,7 +187,24 @@ public class QuizDetailFragment extends Fragment implements DetailQuizAdapter.On
                     Log.e("QuizDetailFragment", "API call failed: " + error.getMessage());
                 }
         );
+
+        // Add the request to the RequestQueue
         Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
+    }
+
+    private List<QuizDetailModel.CurrentFill> extractMaxFillList(List<QuizDetailModel.Datum> datumList) {
+        List<QuizDetailModel.CurrentFill> maxFillList = new ArrayList<>();
+        for (QuizDetailModel.Datum datum : datumList) {
+            if (datum.getPoints() != null) {
+                for (QuizDetailModel.Point point : datum.getPoints()) {
+                    QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
+                    currentFill.setTop_winner(point.getTop_winner());
+                    currentFill.setPoints(point.getPoints());
+                    maxFillList.add(currentFill);
+                }
+            }
+        }
+        return maxFillList;
     }
 
 

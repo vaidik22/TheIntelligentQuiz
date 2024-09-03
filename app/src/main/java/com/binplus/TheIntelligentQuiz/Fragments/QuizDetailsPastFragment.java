@@ -1,6 +1,8 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
 
+import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_CONTEST_DETAIL;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,11 +19,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.binplus.TheIntelligentQuiz.Adapters.DetailQuizAdapter;
+import com.binplus.TheIntelligentQuiz.Adapters.DetailQuizAdapterPast;
 import com.binplus.TheIntelligentQuiz.Adapters.WinningListRankAdapter;
 import com.binplus.TheIntelligentQuiz.Model.PastModel;
 import com.binplus.TheIntelligentQuiz.Model.QuizDetailModel;
 import com.binplus.TheIntelligentQuiz.R;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,14 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class QuizDetailsPastFragment extends Fragment implements DetailQuizAdapter.OnFillButtonClickListener {
+public class QuizDetailsPastFragment extends Fragment  {
 
     private RecyclerView recyclerView;
-    private DetailQuizAdapter quizAdapter;
+    private DetailQuizAdapterPast quizAdapter;
     private List<QuizDetailModel.Datum> quizModelItemList;
     private static final String ARG_ID = "id";
     private List<QuizDetailModel.CurrentFill> quizList2;
-    private RecyclerView recyclerViewWinning;
+   // private RecyclerView recyclerViewWinning;
     private WinningListRankAdapter quizAdapterWinning;
     private LinearLayout progressBar;
     private LinearLayout main;
@@ -78,16 +81,16 @@ public class QuizDetailsPastFragment extends Fragment implements DetailQuizAdapt
         View view = inflater.inflate(R.layout.fragment_quiz_details_past, container, false);
         progressBar = view.findViewById(R.id.progress_bar);
         main = view.findViewById(R.id.main);
-        recyclerViewWinning = view.findViewById(R.id.rev_winning_list);
-        recyclerViewWinning.setLayoutManager(new LinearLayoutManager(recyclerViewWinning.getContext()));
+        //recyclerViewWinning = view.findViewById(R.id.rev_winning_list);
+       // recyclerViewWinning.setLayoutManager(new LinearLayoutManager(recyclerViewWinning.getContext()));
         quizList2 = new ArrayList<>();
         quizAdapterWinning = new WinningListRankAdapter(quizList2);
-        recyclerViewWinning.setAdapter(quizAdapterWinning);
+       // recyclerViewWinning.setAdapter(quizAdapterWinning);
         callUpcomingQuizDetailApi();
         quizModelItemList = new ArrayList<>();
         recyclerView = view.findViewById(R.id.rev_detail_contest);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        quizAdapter = new DetailQuizAdapter(quizModelItemList, this,getActivity().getSupportFragmentManager());
+        quizAdapter = new DetailQuizAdapterPast(quizModelItemList, getActivity().getSupportFragmentManager());
         recyclerView.setAdapter(quizAdapter);
         return view;
     }
@@ -140,12 +143,14 @@ public class QuizDetailsPastFragment extends Fragment implements DetailQuizAdapt
 //    }
 private void callUpcomingQuizDetailApi() {
     showLoading();
-    // Convert Gson JsonObject to org.json.JSONObject
-    JSONObject params = new JSONObject();
-    SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-    String authId = sharedPreferences.getString("userId", "Default Id");
+    String url = GET_CONTEST_DETAIL;
 
+    // Create a JSONObject for the parameters
+    JSONObject params = new JSONObject();
     try {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+        String authId = sharedPreferences.getString("userId", "Default Id");
+
         params.put("user_id", authId);
         params.put("contest_id", id);
     } catch (JSONException e) {
@@ -154,80 +159,27 @@ private void callUpcomingQuizDetailApi() {
         return;
     }
 
-    String url = "your_api_endpoint_here"; // Replace with your actual API endpoint
-
     // Create a JsonObjectRequest
     JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
             response -> {
                 hideLoading();
                 try {
-                    if (response != null && response.has("data")) {
-                        JSONArray dataArray = response.getJSONArray("data");
-
-                        // Clear and update quizModelItemList
+                    Gson gson = new Gson();
+                    QuizDetailModel quizModel = gson.fromJson(response.toString(), QuizDetailModel.class);
+                    if (quizModel != null && quizModel.getData() != null) {
+                        ArrayList<QuizDetailModel.Datum> data = quizModel.getData();
                         quizModelItemList.clear();
-                        for (int i = 0; i < dataArray.length(); i++) {
-                            JSONObject dataObject = dataArray.getJSONObject(i);
-                            QuizDetailModel.Datum datum = new QuizDetailModel.Datum();
-                            datum.setId(dataObject.optString("id"));
-                            datum.setName(dataObject.optString("name"));
-                            datum.setStart_date(dataObject.optString("start_date"));
-                            datum.setEnd_date(dataObject.optString("end_date"));
-                            datum.setDescription(dataObject.optString("description"));
-                            datum.setImage(dataObject.optString("image"));
-                            datum.setEntry(dataObject.optString("entry"));
-                            datum.setMax_entry(dataObject.optString("max_entry"));
-                            datum.setJoin_spot(dataObject.optString("join_spot"));
-                            datum.setAvailable_spot(dataObject.optString("available_spot"));
-                            datum.setContest_status(dataObject.optString("contest_status"));
-                            datum.setPrize_pool(dataObject.optString("prize_pool"));
-                            datum.setDate_created(dataObject.optString("date_created"));
-                            datum.setTop_users(dataObject.optString("top_users"));
-                            datum.setParticipants(dataObject.optString("participants"));
-                            datum.setJoin_contest_status(dataObject.optInt("join_contest_status"));
-                            datum.setComplete_status(dataObject.optInt("complete_status"));
-
-                            // Parse points
-                            JSONArray pointsArray = dataObject.optJSONArray("points");
-                            ArrayList<QuizDetailModel.Point> pointsList = new ArrayList<>();
-                            if (pointsArray != null) {
-                                for (int j = 0; j < pointsArray.length(); j++) {
-                                    JSONObject pointObject = pointsArray.getJSONObject(j);
-                                    QuizDetailModel.Point point = new QuizDetailModel.Point();
-                                    point.setTop_winner(pointObject.optString("top_winner"));
-                                    point.setPoints(pointObject.optString("points"));
-                                    pointsList.add(point);
-                                }
-                            }
-                            datum.setPoints(pointsList);
-
-                            // Parse current_fill
-                            JSONArray currentFillArray = dataObject.optJSONArray("current_fill");
-                            ArrayList<QuizDetailModel.CurrentFill> currentFillList = new ArrayList<>();
-                            if (currentFillArray != null) {
-                                for (int k = 0; k < currentFillArray.length(); k++) {
-                                    JSONObject fillObject = currentFillArray.getJSONObject(k);
-                                    QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
-                                    currentFill.setTop_winner(fillObject.optString("top_winner"));
-                                    currentFill.setPoints(fillObject.optString("points"));
-                                    currentFillList.add(currentFill);
-                                }
-                            }
-                            datum.setCurrent_fill(currentFillList);
-
-                            quizModelItemList.add(datum);
-                        }
+                        quizModelItemList.addAll(data);
                         quizAdapter.notifyDataSetChanged();
 
-                        // Extract currentFillList
-                        List<QuizDetailModel.CurrentFill> currentFillList = extractCurrentFillList(quizModelItemList);
+                        // Extract only the "max fill" data
+                        List<QuizDetailModel.CurrentFill> maxFillList = extractMaxFillList(data);
                         quizList2.clear();
-                        quizList2.addAll(currentFillList);
+                        quizList2.addAll(maxFillList);
                         quizAdapterWinning.notifyDataSetChanged();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.e("QuizDetailFragment", "Error parsing response: " + e.getMessage());
+                } catch (Exception e) {
+                    Log.e("QuizDetailFragment", "JSON parsing error: " + e.getMessage());
                 }
             },
             error -> {
@@ -236,9 +188,25 @@ private void callUpcomingQuizDetailApi() {
             }
     );
 
-    // Adding the request to the queue
+    // Add the request to the RequestQueue
     Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
 }
+
+    private List<QuizDetailModel.CurrentFill> extractMaxFillList(List<QuizDetailModel.Datum> datumList) {
+        List<QuizDetailModel.CurrentFill> maxFillList = new ArrayList<>();
+        for (QuizDetailModel.Datum datum : datumList) {
+            if (datum.getPoints() != null) {
+                for (QuizDetailModel.Point point : datum.getPoints()) {
+                    QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
+                    currentFill.setTop_winner(point.getTop_winner());
+                    currentFill.setPoints(point.getPoints());
+                    maxFillList.add(currentFill);
+                }
+            }
+        }
+        return maxFillList;
+    }
+
 
     private List<QuizDetailModel.CurrentFill> extractCurrentFillList(List<QuizDetailModel.Datum> datumList) {
         List<QuizDetailModel.CurrentFill> currentFillList = new ArrayList<>();
@@ -257,26 +225,5 @@ private void callUpcomingQuizDetailApi() {
             }
         }
         return currentFillList;
-    }
-
-    @Override
-    public void onMaxFillClick(List<QuizDetailModel.Point> points) {
-        List<QuizDetailModel.CurrentFill> maxFillList = new ArrayList<>();
-        for (QuizDetailModel.Point point : points) {
-            QuizDetailModel.CurrentFill currentFill = new QuizDetailModel.CurrentFill();
-            currentFill.setTop_winner(point.getTop_winner());
-            currentFill.setPoints(point.getPoints());
-            maxFillList.add(currentFill);
-        }
-        quizList2.clear();
-        quizList2.addAll(maxFillList);
-        quizAdapterWinning.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onCurrentFillClick(List<QuizDetailModel.CurrentFill> currentFills) {
-        quizList2.clear();
-        quizList2.addAll(currentFills);
-        quizAdapterWinning.notifyDataSetChanged();
     }
 }

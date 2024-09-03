@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Adapters.QuizAdapterPast;
@@ -160,9 +161,12 @@ private void callUpcomingQuizApi(String type) {
                         if (data != null) {
                             no_upcoming_contest_layout.setVisibility(View.GONE);
                             recyclerView.setVisibility(View.VISIBLE);
-                            pastModelItemList.clear();
-                            pastModelItemList.addAll(data);
-                            quizAdapter.notifyDataSetChanged();
+                            getActivity().runOnUiThread(() -> {
+                                pastModelItemList.clear();
+                                pastModelItemList.addAll(data);
+                                quizAdapter.notifyDataSetChanged();
+                            });
+
                             for (PastModel.Datum datum : data) {
                                 Log.d("HomePage", "Datum: " + datum.toString());
                             }
@@ -180,8 +184,9 @@ private void callUpcomingQuizApi(String type) {
             }
     );
 
-    // Adding the request to the queue
-    Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
+    RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+    requestQueue.add(jsonObjectRequest);
+
 }
 
     private void initViews(View view) {

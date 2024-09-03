@@ -228,5 +228,6 @@ public class AddMoneyFragment extends Fragment implements OnMoneySelectedListene
     @Override
     public void onMoneySelected(String money) {
         et_money.setText(money);
+        et_money.setTextColor(getResources().getColor(R.color.green));
     }
 }

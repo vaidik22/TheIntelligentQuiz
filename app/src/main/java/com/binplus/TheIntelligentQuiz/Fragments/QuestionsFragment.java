@@ -6,8 +6,10 @@ import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.CONTEST_UPDATE_SCOR
 import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_QUESTION_BY_CONTEST;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -32,6 +34,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.binplus.TheIntelligentQuiz.Activity.HomeActivity;
@@ -382,7 +385,6 @@ public class QuestionsFragment extends Fragment {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String authId = sharedPreferences.getString("userId", "Default Id");
 
-        // Create the JSON object for the request body
         JSONObject params = new JSONObject();
         try {
             params.put("user_id", authId);
@@ -400,13 +402,12 @@ public class QuestionsFragment extends Fragment {
             return;
         }
 
-        String url = CONTEST_UPDATE_SCORE;
+        String url = "https://gyanmoney.in/dev/rest_api/contest_update_score";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, params,
                 response -> {
-                    // Handle successful response
                     if (response != null) {
                         try {
-                            boolean isSuccess = response.getBoolean("success"); // Replace with actual success check based on your API response
+                            boolean isSuccess = response.getBoolean("success");
                             if (isSuccess) {
                                 if (getActivity() != null) {
                                     showErrorgreen(R.string.score_updated);
@@ -426,15 +427,16 @@ public class QuestionsFragment extends Fragment {
                     }
                 },
                 error -> {
-
                     if (getActivity() != null) {
                         Toast.makeText(getActivity(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
 
-        Volley.newRequestQueue(getContext()).add(jsonObjectRequest);
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        requestQueue.add(jsonObjectRequest);
     }
+
 
     private void displayQuestion(QuestionModel.Datum question) {
         tvQuestion.setText(question.getQuestion());
@@ -456,29 +458,75 @@ public class QuestionsFragment extends Fragment {
     }
 
 
+//    private void startTimer() {
+//        if (timer != null) {
+//            timer.cancel();
+//        }
+//        timer = new CountDownTimer(30000, 1000) {
+//            @Override
+//            public void onTick(long millisUntilFinished) {
+//                tvTimer.setText(String.valueOf(millisUntilFinished / 1000));
+//            }
+//
+//            @Override
+//            public void onFinish() {
+//                tvTimer.setText("0");
+//                if (currentQuestionIndex < questions.size() - 1) {
+//                    currentQuestionIndex++;
+//                    displayQuestion(questions.get(currentQuestionIndex));
+//                    resetTimer();
+//                } else {
+//                    Toast.makeText(getContext(), "Quiz completed", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        }.start();
+//    }
+    // 1. Initialize the timer for each question
     private void startTimer() {
         if (timer != null) {
             timer.cancel();
         }
-        timer = new CountDownTimer(30000, 1000) {
-            @Override
+        timer = new CountDownTimer(30000, 1000){
             public void onTick(long millisUntilFinished) {
+                // Update the timer UI
                 tvTimer.setText(String.valueOf(millisUntilFinished / 1000));
             }
 
-            @Override
             public void onFinish() {
-                tvTimer.setText("0");
-                if (currentQuestionIndex < questions.size() - 1) {
-                    currentQuestionIndex++;
-                    displayQuestion(questions.get(currentQuestionIndex));
-                    resetTimer();
-                } else {
-                    Toast.makeText(getContext(), "Quiz completed", Toast.LENGTH_SHORT).show();
-                }
+                // 2. Handle timer completion
+                showTimeExceededDialog();
             }
         }.start();
     }
+
+    // 3. Display the dialog box
+    private void showTimeExceededDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Time's up!")
+                .setMessage("The time for this question has expired. Moving to the next question.")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 4. Automatically move to the next question
+                        moveToNextQuestion();
+                    }
+                })
+                .show();
+    }
+
+    // 4. Method to move to the next question
+    private void moveToNextQuestion() {
+        // Logic to move to the next question
+        if (currentQuestionIndex < questions.size() - 1) {
+            currentQuestionIndex++;
+            displayQuestion(questions.get(currentQuestionIndex));
+            resetTimer();
+        } else {
+            Toast.makeText(getContext(), "Quiz completed", Toast.LENGTH_SHORT).show();
+            openDialogBoxCongrats();
+        }
+    }
+
 
     private void resetTimer() {
         // Cancel the existing timer if any

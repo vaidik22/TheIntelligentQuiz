@@ -75,7 +75,7 @@
                 android:layout_height="70dp"
                 android:scaleY="-1"
                 android:visibility="gone"
-                android:background="@drawable/img_login"
+                android:background="@drawable/purple_background"
                 android:padding="10dp">
 
                 <ImageView
