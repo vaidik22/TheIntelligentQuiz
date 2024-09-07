@@ -92,6 +92,6 @@
         <item name="android:textSize">@dimen/all_tvsize_7pt</item>
     </style>
 
-    <dimen name="all_tvsize_7pt">7.5pt</dimen>
     <item name="mid_text" type="dimen" format="float">7.5</item>
+    <dimen name="edit_padding">5pt</dimen>
 </resources>

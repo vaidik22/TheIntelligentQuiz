@@ -40,7 +40,6 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
-                android:scaleY="-1"
                 android:visibility="visible"
                 android:background="@color/purpleBackground"
                 android:padding="10dp">
