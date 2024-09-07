@@ -9,7 +9,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/purple_background">
+        android:background="@drawable/img_login">
 
         <ImageView
             android:id="@+id/logo"
@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="The Intelligent Quiz"
-            android:textColor="@color/black"
+            android:textColor="@color/text_clr_white"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_below="@id/logo"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Where knowledge turns into rewards"
-            android:textColor="@color/black"
+            android:textColor="@color/text_clr_white"
             android:textSize="16sp"
             android:layout_below="@id/appName"
             android:layout_centerHorizontal="true"
@@ -60,30 +60,25 @@
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/existingMemberButton"
-            android:layout_width="match_parent"
-            android:layout_height="37dp"
-            android:text="Existing Member"
-            android:background="@drawable/purple_button"
-            android:textColor="@color/white"
             android:layout_above="@id/createAccountButton"
-            android:layout_marginBottom="10dp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="16dp" />
+            android:layout_width="match_parent"
+            android:layout_marginVertical="@dimen/space_4"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="10dp"
+            android:text="Existing Member"
+            style="@style/button" />
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/createAccountButton"
             android:layout_width="match_parent"
-            android:layout_height="37dp"
-            android:text="Create an Account"
-            android:background="@drawable/button_background"
-            android:textColor="@color/white"
-            android:textAllCaps="false"
-            android:textStyle="bold"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="10dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="16dp"/>
+            android:layout_marginVertical="@dimen/space_4"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:text="Create an Account"
+            style="@style/button"/>
 
     </RelativeLayout>
 
