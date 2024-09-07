@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <corners
+        android:radius="20dp"
+        />
+    <!--        <stroke android:width="0.9dp" android:color="@color/light_background"/>-->
+    <gradient
+        android:type="linear"
+        android:angle="180"
+        android:startColor="@color/button_colr"
+        android:centerColor="@color/button_colr"
+        android:endColor="@color/button_colr"/>
+
+    <!--        <solid android:color="@color/colorPrimary"/>-->
+
+</shape>

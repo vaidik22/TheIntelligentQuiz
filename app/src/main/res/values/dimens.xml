@@ -103,5 +103,121 @@
     <dimen name="share_icon_height">15pt</dimen>
     <dimen name="share_icon_width">35pt</dimen>
     <dimen name="dimen_5pt">5pt</dimen>
+        <!-- Default screen margins, per the Android Design guidelines. -->
+        <dimen name="match_parent">60dp</dimen>
+        <dimen name="basic_page_top_margin">80pt</dimen>
+        <dimen name="activity_horizontal_margin">16pt</dimen>
+        <dimen name="activity_vertical_margin">16pt</dimen>
+        <dimen name="nav_header_vertical_spacing">16pt</dimen>
+        <dimen name="all_tvsize_7pt">7.5pt</dimen>
+        <dimen name="all_iv_size40">40dp</dimen>
+        <dimen name="tv_bold_12pt">12pt</dimen>
+        <dimen name="tv_medium_9pt">9pt</dimen>
+        <dimen name="tv_small_normal_6pt">6pt</dimen>
+        <dimen name="tv_x_small_4">4pt</dimen>
+        <dimen name="tv_x_small_5">5pt</dimen>
+        <dimen name="tv_xlarge_22pt">22pt</dimen>
+        <dimen name="cardView_radius">8pt</dimen>
+        <dimen name="iv_small_size30">30pt</dimen>
 
+        <dimen name="nav_view_hradertv_size6pt">6pt</dimen>
+
+
+
+
+        <!--    <dimen name="activityPadding">16dp</dimen>-->
+        <!--    <dimen name="placeholderImage">60dp</dimen>-->
+        <!--    <dimen name="placeholderTextHeight">8dp</dimen>-->
+        <!--    <dimen name="padding_10">10dp</dimen>-->
+
+        <dimen name="nav_view_textview_size">6pt</dimen>
+
+        <dimen name="search_tv">3pt</dimen>
+
+        <dimen name="space_20_txt">20pt</dimen>
+        <dimen name="slider_one_height">250pt</dimen>
+        <dimen name="slider_two_height">100dp</dimen>
+        <dimen name="slider_three_height">100pt</dimen>
+
+
+        <dimen name="edittext_height">23pt</dimen>
+        <dimen name="imageview_size">25pt</dimen>
+        <dimen name="margin_edittext_horizontal">20pt</dimen>
+
+
+        <dimen name="margin_editextvertical">5pt</dimen>
+        <dimen name="drawle_padding">5pt</dimen>
+
+        <dimen name="navigation_text">10dp</dimen>
+        <dimen name="navigation_icon">20dp</dimen>
+
+        <dimen name="cv_65dp">65pt</dimen>
+        <dimen name="header_iv_13">13pt</dimen>
+        <dimen name="progressbar_size">25pt</dimen>
+        <dimen name="button_small_size">60pt</dimen>
+
+        <dimen name="round_img_size">80pt</dimen>
+        <dimen name="space_50">50pt</dimen>
+        <dimen name="iv_60dp">60pt</dimen>
+        <dimen name="cv_profile">35pt</dimen>
+        <dimen name="edit_margin">3pt</dimen>
+        <dimen name="edit_padding">5pt</dimen>
+        <dimen name="bootom_hieght">20pt</dimen>
+        <dimen name="iv_close_16">16pt</dimen>
+        <dimen name="iv_close_20">20pt</dimen>
+        <dimen name="viewline_height">0.5pt</dimen>
+        <dimen name="progress_h_w">40dp</dimen>
+        <dimen name="circle_progress">35dp</dimen>
+
+        <dimen name="img_height">155dp</dimen>
+
+        <dimen name="margin_10pt">10pt</dimen>
+        <dimen name="margin_5pt">5pt</dimen>
+        <dimen name="margin_7pt">7pt</dimen>
+        <dimen name="margin_20pt">20pt</dimen>
+        <!--    <dimen name="small_text">10sp</dimen>-->
+        <dimen name="margin_10dp">10dp</dimen>
+        <dimen name="margin_12dp">12dp</dimen>
+        <dimen name="margin_5dp">5dp</dimen>
+        <dimen name="margin_7dp">7dp</dimen>
+        <dimen name="margin_20dp">20dp</dimen>
+
+        <dimen name="padding_10">10dp</dimen>
+        <dimen name="padding_30">30dp</dimen>
+        <dimen name="default_text_size">7pt</dimen>
+
+        <dimen name="textsize_18">18sp</dimen>
+        <dimen name="padding_15">15dp</dimen>
+        <dimen name="txt_size_16">6pt</dimen>
+        <dimen name="txtsize_18">18sp</dimen>
+        <dimen name="tv_5">5pt</dimen>
+
+        <dimen name="mid_text">7.5pt</dimen>
+        <dimen name="profile_text">6.5pt</dimen>
+
+        <dimen name="margin_11pt">11pt</dimen>
+
+        <dimen name="small_text">4pt</dimen>
+
+        <dimen name="tv_6">6pt</dimen>
+        <dimen name="tv_7">7pt</dimen>
+        <dimen name="tv_8">8pt</dimen>
+
+        <!--    <dimen name="activityPadding">16dp</dimen>-->
+        <!--    <dimen name="placeholderImage">60dp</dimen>-->
+        <!--    <dimen name="placeholderTextHeight">8dp</dimen>-->
+        <!--    <dimen name="padding_10">10dp</dimen>-->
+
+
+
+        <!-- Default screen margins, per the Android Design guidelines. -->
+        <dimen name="result_circle">75dp</dimen>
+        <dimen name="view_corner">25dp</dimen>
+        <dimen name="circle_height">45dp</dimen>
+        <dimen name="option_btn_height">20pt</dimen>
+        <dimen name="profile_size">100dp</dimen>
+        <dimen name="default_height">200dp</dimen>
+        <dimen name="margin_dp">15dp</dimen>
+
+        <dimen name="iv_30pt">30pt</dimen>
 </resources>

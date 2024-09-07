@@ -11,7 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/purple_background">
+        android:background="@drawable/img_login">
 
         <!-- Back Button -->
         <ImageView
@@ -23,7 +23,7 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:contentDescription="Back Button"
-            app:tint="@color/white" />
+            app:tint="@color/text_clr_white" />
 
         <!-- Welcome Back Text -->
         <TextView
@@ -34,7 +34,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginLeft="30dp"
             android:text="Welcome Back"
-            android:textColor="@color/white"
+            android:textColor="@color/text_clr_white"
             android:textSize="20dp"
             android:textStyle="bold" />
 
@@ -48,7 +48,8 @@
             android:layout_marginBottom="40dp"
             android:layout_marginLeft="30dp"
             android:text="unlock your chance to win, sign up today!"
-            android:textColor="@color/white"
+            android:textColor="@color/text_clr_white"
+            android:textStyle="bold"
             android:textSize="16sp" />
 
         <TextView
@@ -60,29 +61,20 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
+            style="@style/MyTextviewWhite"
             />
 
 
         <EditText
             android:id="@+id/etMobileNumber"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
             android:layout_below="@id/tv_mobile_number"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/edittext_height"
             android:layout_marginTop="3pt"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-            android:textSize="6pt"
-            android:background="@drawable/rounded_edittext"
-            android:hint="Enter here"
-            android:maxLength="10"
-            android:inputType="number"
-            android:padding="16dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="#9A9595"
-            android:singleLine="true"
-            android:gravity="center_vertical"
+            android:hint="Enter Here"
+            android:textSize="15sp"
             />
 
 
@@ -98,35 +90,30 @@
             android:layout_marginEnd="10dp"
             android:text="Get OTP"
             android:drawableEnd="@drawable/ic_arrow_right_1"
-            android:textColor="@android:color/white" />
+            android:drawableTint="@color/text_clr_white"
+            android:textColor="@color/text_clr_white"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
-            android:layout_height="37dp"
             android:layout_below="@id/btnGetOtp"
+            android:layout_width="match_parent"
+            android:layout_marginVertical="@dimen/space_4"
+            android:layout_height="@dimen/button_height"
             android:layout_marginTop="16dp"
             android:layout_marginStart="10dp"
-            android:background="@drawable/purple_button"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:layout_marginEnd="10dp"
-            android:text="Login" />
+            android:text="Login"
+            style="@style/button"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnCreateAccount"
             android:layout_width="match_parent"
-            android:layout_height="37dp"
+            android:layout_height="@dimen/button_height"
+            android:backgroundTint="@color/colorPrimaryDark"
             android:layout_below="@id/btnLogin"
             android:layout_marginTop="8dp"
             android:layout_marginStart="10dp"
-            android:background="@drawable/button_background"
-            android:layout_marginEnd="10dp"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:text="Create an Account" />
+            android:text="Create An account"
+            style="@style/button"/>
 
 
 
@@ -149,14 +136,14 @@
 
             <TextView
                 android:id="@+id/tvOr"
+                style="@style/MyTextview_bold"
+                android:textColor="@color/text_clr_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="Or"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+               />
 
             <View
                 android:layout_width="0dp"
@@ -167,13 +154,13 @@
                 android:layout_marginLeft="30dp"/>
 
         </LinearLayout>
-<!--        <LinearLayout-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_below="@id/or"-->
-<!--            android:layout_centerHorizontal="true"-->
-<!--            android:orientation="horizontal"-->
-<!--            android:layout_marginTop="16dp">-->
+        <!--        <LinearLayout-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_below="@id/or"-->
+        <!--            android:layout_centerHorizontal="true"-->
+        <!--            android:orientation="horizontal"-->
+        <!--            android:layout_marginTop="16dp">-->
 
         <LinearLayout
             android:layout_width="wrap_content"

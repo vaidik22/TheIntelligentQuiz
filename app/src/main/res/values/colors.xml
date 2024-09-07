@@ -9,4 +9,81 @@
     <color name="grey">#F3F1EF</color>
     <color name="buttonColor">#F99817</color>
     <color name="pink">#eb42a7</color>
+        <color name="colorPrimary">#ab97fe</color>
+        <color name="colorPrimaryDark">#876efd</color>
+        <color name="colorAccent">#9B05B4</color>
+        <color name="purple_200">#FFBB86FC</color>
+        <color name="purple_500">#FF6200EE</color>
+        <color name="purple_700">#FF3700B3</color>
+        <color name="teal_200">#FF03DAC5</color>
+        <color name="teal_700">#FF018786</color>
+    <color name="text_clr_white">#673AB7</color>
+        <color name="orange">#FE3C01</color>
+        <color name="cyan">#05F4DF</color>
+        <color name="smoke_white">#E3DEDE</color>
+        <color name="smoke_light_white">#F8F8F8</color>
+
+        <color name="shimmer_placeholder">#dddddd</color>
+        <color name="hint_color">#C2C2C2</color>
+        <color name="hint_color_blck_theme">#F80303</color>
+        <color name="dark_red_background">#801111</color>
+        <color name="card_background">#363636</color>
+        <color name="yellow">#F5EF0E</color>
+        <color name="otp_box_yellow">#DADAD0</color>
+        <color name="status_yellow">#C6AA1E</color>
+        <color name="status_accepted">#EFDB74</color>
+        <color name="status_ontheway">#890482</color>
+        <color name="dark_gray">#4E4C4C</color>
+        <color name="lightest_gray">#F4F4F5</color>
+        <color name="BackgroundtWhiteColor">#CCCCCC</color>
+
+        <color name="transparent_filter">#80000000</color>
+        <color name="sky_blue">#931e90ff</color>
+        <color name="trans_gray">#A6f1f1f1</color>
+        <color name="light_grey">#f8f8f8</color>
+
+        <color name="select_color">#901D6CBA</color>
+        <color name="txt_color">#020607</color>
+        <color name="right_dark">#ff7d7d</color>
+        <color name="wrong_dark">#3cd968</color>
+        <color name="red_">#D40B0B</color>
+
+
+        //You can change Background color
+        <color name="bg_color">#f4f4f4</color>
+
+        <color name="background_color">#ffffff</color>
+
+        <color name="gray1">#f1f1f1</color>
+        <color name="light_background">#CCF3F5</color>
+        <!-- background color of lifeline bg nd main page bottom bg colors -->
+        <color name="transparent">#00000000</color>
+        <color name="dark_red">#ff634e</color>
+        <color name="off_white">#f4f4f4</color>
+        <color name="gray">#808080</color>
+        <color name="light_gray">#d4d4d4</color>
+        <color name="correct">#3cd968</color>
+        <color name="incorrect">#ff7d7d</color>
+        <color name="edt_bg">#ecf5f8</color>
+
+        <color name="purple">#9E59E1</color>
+        <color name="purple_light">#F17DC4</color>
+        <color name="sky">#439BD2</color>
+        <color name="sky_light">#73E1C0</color>
+        <color name="orange_light">#ED9F3F</color>
+        <color name="blue">#1D6CBA</color>
+        <color name="blue_light">#54C1FF</color>
+
+        <color name="pink_light">#FB5293</color>
+        <color name="green_light">#8BD188</color>
+        <color name="red_light">#93291E</color>
+        <!-- You change Background color of MainScreen and LoginScreen-->
+        <color name="main_bg">#eeeff3</color>
+
+
+        <color name="cryan">#00C2FF</color>
+        <color name="yellow_text">#F9C700</color>
+        <color name="com_facebook_blue">#1877F2</color>
+
+        <color name="button_colr">#f9763e</color>
 </resources>

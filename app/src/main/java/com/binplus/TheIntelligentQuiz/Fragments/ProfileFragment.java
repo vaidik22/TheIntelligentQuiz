@@ -45,11 +45,13 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.binplus.TheIntelligentQuiz.Activity.HomeActivity;
 import com.binplus.TheIntelligentQuiz.Activity.MainActivity;
 import com.binplus.TheIntelligentQuiz.Model.ProfileModel;
 import com.binplus.TheIntelligentQuiz.Model.UpdateProfileModel;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.retrofit.ConfigModel;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
@@ -67,6 +69,7 @@ public class ProfileFragment extends Fragment {
     ImageView instagram_icon;
     ImageView facebook_icon;
     ImageView twitter_icon;
+    ImageView back_icon;
     String instagramLink;
     String facebookUrl;
     String twitterLink;
@@ -87,6 +90,8 @@ public class ProfileFragment extends Fragment {
     private static final int PICK_IMAGE_REQUEST = 1;
     private CircleImageView img_profile_dialog;
     private Bitmap selectedBitmap;
+    AppBarLayout appBarLayout;
+    CircleImageView ivCir1;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -208,6 +213,32 @@ public class ProfileFragment extends Fragment {
                 openLogoutDialog();
             }
         });
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                int totalScrollRange = appBarLayout.getTotalScrollRange();
+                float collapseThreshold = 0.7f * totalScrollRange;  // Adjust this value as needed
+
+                if (Math.abs(verticalOffset) >= collapseThreshold) {
+                    iv_cir.setVisibility(View.GONE);
+                    ivCir1.setVisibility(View.VISIBLE);
+                } else {
+                    iv_cir.setVisibility(View.VISIBLE);
+                    ivCir1.setVisibility(View.GONE);
+                }
+            }
+        });
+        back_icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                //intent to main activity
+                Intent intent = new Intent(getContext(), HomeActivity.class);
+                startActivity(intent);
+
+            }
+        });
     }
     private void expandView(final View view) {
         view.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -281,6 +312,7 @@ public class ProfileFragment extends Fragment {
                 if (selectedBitmap != null) {
                     String base64Image = convertBitmapToBase64(selectedBitmap);
                     iv_cir.setImageBitmap(selectedBitmap); // Set the selected image to the main ImageView
+                    ivCir1.setImageBitmap(selectedBitmap); // Set the selected image to the main ImageView
                     updateProfile(base64Image); // Call API to update profile
                     dialog.dismiss(); // Close the dialog
                 } else {
@@ -687,7 +719,11 @@ private void fetchProfileDetails() {
                 .load(imageUrl)
                 .placeholder(R.drawable.profile)
                 .error(R.drawable.profile)
-                .into(iv_cir);
+                .into(iv_cir);Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.profile)
+                .error(R.drawable.profile)
+                .into(ivCir1);
         tv_name.setText(profile.get(0).getName());
         tv_user_mobile.setText(profile.get(0).getMobile());
         tv_total_played.setText(profile.get(0).getTotal_played_game());
@@ -737,5 +773,8 @@ private void fetchProfileDetails() {
         facebook_icon = view.findViewById(R.id.facebook_icon);
         twitter_icon = view.findViewById(R.id.twitter_icon);
         tv_logout = view.findViewById(R.id.tv_logout);
+        appBarLayout = view.findViewById(R.id.appBarLayout);
+        ivCir1 = view.findViewById(R.id.iv_cir_1);
+        back_icon = view.findViewById(R.id.back_icon);
     }
 }
