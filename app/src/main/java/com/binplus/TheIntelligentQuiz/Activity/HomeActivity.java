@@ -1,20 +1,34 @@
 package com.binplus.TheIntelligentQuiz.Activity;
 
+import static android.content.ContentValues.TAG;
 import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_PROFILE;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -36,16 +50,21 @@ import com.binplus.TheIntelligentQuiz.Fragments.WithdrawFragment;
 import com.binplus.TheIntelligentQuiz.Model.ProfileModel;
 import com.binplus.TheIntelligentQuiz.R;
 import com.binplus.TheIntelligentQuiz.common.Common;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Firebase;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
-
+import com.onesignal.Continue;
+import com.onesignal.OneSignal;
+import com.onesignal.debug.LogLevel;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
 
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -62,12 +81,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private TextView toolbarTitle;
     ImageView back_icon;
     ArrayList<ProfileModel.Data> profileList = new ArrayList<>();
+    private static final String ONESIGNAL_APP_ID = "9b346f12-1396-404c-9a64-e8ab44f4908b";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         initView();
+        int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
+        // If the permission is not granted, request it.
+        if (permissionState == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions( this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS},1);
+        }
         fetchProfileDetails();
         SharedPreferences sharedPreferences = getSharedPreferences("UserSession", Context.MODE_PRIVATE);
         String userName = sharedPreferences.getString("userName", "Default Name");
@@ -145,7 +170,44 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("FCM token", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
 
+                        // Get the FCM token
+                        String token = task.getResult();
+                        Log.d("FCM token", "FCM Token: " + token);
+
+                        // Optionally, send token to your server or use it for push notifications
+                    }
+                });
+
+        // Declare the launcher at the top of your Activity/Fragment:
+
+//        OneSignal.getDebug().setLogLevel(LogLevel.VERBOSE);
+//        OneSignal.initWithContext(this, ONESIGNAL_APP_ID);
+//        OneSignal.getNotifications().requestPermission(false, Continue.none());
+////
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//// Get the layouts to use in the custom notification
+//        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.custom_notification);
+//
+//// Apply the layouts to the notification.
+//        Notification customNotification = new NotificationCompat.Builder(getApplicationContext(),ONESIGNAL_APP_ID)
+//                .setSmallIcon(R.drawable.savings)
+//                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+//                .setCustomContentView(notificationLayout)
+//                .setCustomBigContentView(notificationLayout)
+//                .build();
+//
+//        notificationManager.notify(666, customNotification);
+//
     }
 //    private void fetchProfileDetails() {
 //        profileList.clear();

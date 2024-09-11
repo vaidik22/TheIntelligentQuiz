@@ -1,8 +1,5 @@
 package com.binplus.TheIntelligentQuiz.Fragments;
 
-
-
-import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.CONTEST_UPDATE_SCORE;
 import static com.binplus.TheIntelligentQuiz.BaseURL.BaseURL.GET_QUESTION_BY_CONTEST;
 
 import android.annotation.SuppressLint;
@@ -114,7 +111,7 @@ public class QuestionsFragment extends Fragment {
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openDialogBox();
+                openDialogBoxCongrats();
             }
         });
         btnNext.setOnClickListener(v -> {
@@ -126,7 +123,7 @@ public class QuestionsFragment extends Fragment {
                     resetOptions();
                 } else {
                     showError(R.string.no_more_questions);
-                    openDialogBox();
+                    openDialogBoxCongrats();
                 }
                 isOptionSelected = false;
             } else {
@@ -141,34 +138,34 @@ public class QuestionsFragment extends Fragment {
 
         return view;
     }
-    private void openDialogBox() {
-        Dialog dialog = new Dialog(getContext());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.getWindow();
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
-        dialog.setContentView(R.layout.dialog_maintain);
-        Button btn_ok;
-        Button btn_no;
-
-        btn_ok = dialog.findViewById(R.id.btn_yes);
-        btn_no = dialog.findViewById(R.id.btn_no);
-        btn_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-                openDialogBoxCongrats();
-            }
-        });
-        btn_no.setOnClickListener(new View.OnClickListener() {
-                                      @Override
-                                      public void onClick(View v) {
-                                          dialog.dismiss();
-                                      }
-                                  });
-
-        dialog.show();
-    }
+//    private void openDialogBox() {
+//        Dialog dialog = new Dialog(getContext());
+//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        dialog.getWindow();
+//        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+//        dialog.setContentView(R.layout.dialog_maintain);
+//        Button btn_ok;
+//        Button btn_no;
+//
+//        btn_ok = dialog.findViewById(R.id.btn_yes);
+//        btn_no = dialog.findViewById(R.id.btn_no);
+//        btn_ok.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                dialog.dismiss();
+//                openDialogBoxCongrats();
+//            }
+//        });
+//        btn_no.setOnClickListener(new View.OnClickListener() {
+//                                      @Override
+//                                      public void onClick(View v) {
+//                                          dialog.dismiss();
+//                                      }
+//                                  });
+//
+//        dialog.show();
+//    }
     private void openDialogBoxCongrats() {
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
         endDate = df.format(Calendar.getInstance().getTime());

@@ -62,4 +62,5 @@
     <string name="account_number_required">Account number is required</string>
     <string name="ifsc_code_required">IFSC code is Required</string>
     <string name="choose_image_from_your_device_png_jpg_jpeg">*choose image from your device(.png,.jpg,.jpeg)</string>
+    <string name="msg_token_fmt">"message Token "</string>
 </resources>

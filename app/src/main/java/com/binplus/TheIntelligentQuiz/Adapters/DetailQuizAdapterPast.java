@@ -55,11 +55,11 @@ public class DetailQuizAdapterPast extends RecyclerView.Adapter<DetailQuizAdapte
         if (image != null && !image.isEmpty()) {
             Picasso.get()
                     .load(BASE_URL_IMAGE + image)
-                    .placeholder(R.drawable.ic_piggy_bank)
-                    .error(R.drawable.ic_piggy_bank)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
                     .into(holder.quizImage);
         } else {
-            holder.quizImage.setImageResource(R.drawable.ic_piggy_bank);
+            holder.quizImage.setImageResource(R.drawable.ic_launcher_background);
         }
         holder.availableSpots.setText(quizModel.getAvailable_spot());
         holder.prizePoolDetail.setText("Rs." + quizModel.getPrize_pool() + "/-");
