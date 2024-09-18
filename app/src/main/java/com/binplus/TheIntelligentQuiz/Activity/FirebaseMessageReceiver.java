@@ -32,74 +32,66 @@ NotificationManager notificationManager;
     // title and
     // body from the message passed in FCM
     @Override
-    public void
-    onMessageReceived(RemoteMessage remoteMessage)
-    {
-        Log.e("dxcfbhj","fghjff");
-        Log.e("dcfvghj",remoteMessage.getData().toString());
-        Log.e("dcfvghj",remoteMessage.getNotification().getBody());
-        Log.e("dcfvghj",remoteMessage.getNotification().getTitle());
-        // First case when notifications are received via
-        // data event
-        // Here, 'title' and 'message' are the assumed names
-        // of JSON
-        // attributes. Since here we do not have any data
-        // payload, This section is commented out. It is
-        // here only for reference purposes.
-        /*if(remoteMessage.getData().size()>0){
-            showNotification(remoteMessage.getData().get("title"),
-                          remoteMessage.getData().get("message"));
-        }*/
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        Log.e("dxcfbhj", "fghjff");
+        Log.e("dcfvghj", remoteMessage.getData().toString());
+        Log.e("dcfvghj", remoteMessage.getNotification().getBody());
+        Log.e("dcfvghj", remoteMessage.getNotification().getTitle());
 
-        // Second case when notification payload is
-        // received.
+        // Initialize the NotificationManager
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationManager notificationManager
-                = (NotificationManager)getSystemService(
-                Context.NOTIFICATION_SERVICE);
         // Check if the Android Version is greater than Oreo
-        if (Build.VERSION.SDK_INT
-                >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel
-                    = new NotificationChannel(
-                    "notification_channel", "web_app",
-                    NotificationManager.IMPORTANCE_HIGH);
-            notificationManager.createNotificationChannel(
-                    notificationChannel);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    "notification_channel", "web_app", NotificationManager.IMPORTANCE_HIGH);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(notificationChannel);
+            }
         }
 
         if (remoteMessage.getNotification() != null) {
-            // Since the notification is received directly
-            // from FCM, the title and the body can be
-            // fetched directly as below.
             showNotification(
-                remoteMessage.getNotification().getTitle(),
-                remoteMessage.getNotification().getBody());
+                    remoteMessage.getNotification().getTitle(),
+                    remoteMessage.getNotification().getBody());
         }
     }
 
     // Method to get the custom Design for the display of
     // notification.
-    private RemoteViews getCustomDesign(String title,
-                                        String message)
-    {
+    private RemoteViews getCustomDesign(String title, String message) {
+
         RemoteViews remoteViews = new RemoteViews(
-            getApplicationContext().getPackageName(),
-            R.layout.custom_notification);
+                getApplicationContext().getPackageName(),
+                R.layout.custom_notification);
         remoteViews.setTextViewText(R.id.title, title);
         remoteViews.setTextViewText(R.id.message, message);
-        remoteViews.setImageViewResource(R.id.icon,
-                                         R.drawable.savings);
+        remoteViews.setImageViewResource(R.id.icon, R.drawable.savings);
+
+        // Set onClick PendingIntent for tv_page1
+        Intent intentPage1 = new Intent(this, HomeActivity.class);
+        intentPage1.putExtra("page", "page1"); // Pass page identifier as extra
+        PendingIntent pendingIntentPage1 = PendingIntent.getActivity(
+                this, 0, intentPage1, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        remoteViews.setOnClickPendingIntent(R.id.tv_page1, pendingIntentPage1);
+
+        // Set onClick PendingIntent for tv_page2
+        Intent intentPage2 = new Intent(this, HomeActivity.class);
+        intentPage2.putExtra("page", "page2"); // Pass page identifier as extra
+        PendingIntent pendingIntentPage2 = PendingIntent.getActivity(
+                this, 1, intentPage2, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        remoteViews.setOnClickPendingIntent(R.id.tv_page2, pendingIntentPage2);
+
         return remoteViews;
     }
+
 
     // Method to display the notifications
     public void showNotification(String title,
                                  String message)
     {
         // Pass the intent to switch to the MainActivity
-        Intent intent
-            = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         // Assign channel ID
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("notification_channel", "FCM Notifications", NotificationManager.IMPORTANCE_HIGH);

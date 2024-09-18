@@ -9,6 +9,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -88,6 +89,30 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         initView();
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("page")) {
+            String page = intent.getStringExtra("page");
+            if ("page1".equals(page)) {
+                // Handle the click for Page 1
+
+                Log.d("NotificationClick", "Page 1 clicked");
+                // Add your logic here
+                Fragment selectedFragment = new ProfileFragment();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.homeFragment, selectedFragment)
+                        .commit();
+            } else if ("page2".equals(page)) {
+                // Handle the click for Page 2
+                Log.d("NotificationClick", "Page 2 clicked");
+                // Add your logic here
+                Fragment selectedFragment = new MyQuizFragment();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.homeFragment, selectedFragment)
+                        .commit();
+            }
+        }
         int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
         // If the permission is not granted, request it.
         if (permissionState == PackageManager.PERMISSION_DENIED) {

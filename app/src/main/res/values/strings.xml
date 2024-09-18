@@ -63,4 +63,8 @@
     <string name="ifsc_code_required">IFSC code is Required</string>
     <string name="choose_image_from_your_device_png_jpg_jpeg">*choose image from your device(.png,.jpg,.jpeg)</string>
     <string name="msg_token_fmt">"message Token "</string>
+    <string name="notifications_admin_channel_name">Admin Notifications</string>
+    <string name="notifications_admin_channel_description">Channel for admin notifications</string>
+    <string name="page1">Page1</string>
+    <string name="page2">Page2</string>
 </resources>

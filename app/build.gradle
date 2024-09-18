@@ -42,7 +42,7 @@ dependencies {
     androidTestImplementation libs.espresso.core
 
 
-
+    implementation 'com.google.firebase:firebase-messaging:10.2.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.squareup.picasso:picasso:2.8'
 
@@ -83,3 +83,4 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.onesignal:OneSignal:[5.0.0, 5.99.99]'
 }
+apply plugin: 'com.google.gms.google-services'
